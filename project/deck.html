@@ -1,0 +1,1504 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>JPR 2026 — Laudo Assistido por LLM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet" />
+<script src="deck-stage.js"></script>
+<script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<style>
+  :root{
+    --navy:#0A2342;
+    --navy-2:#143258;
+    --ink:#0A2342;
+    --bg:#F5F7FA;
+    --paper:#FFFFFF;
+    --teal:#00A8B5;
+    --amber:#F4A300;
+    --rule:#D7DCE3;
+    --muted:#5C6675;
+    --soft:#EEF1F5;
+    --shell:#0A2342;
+    --display-font:'Inter','IBM Plex Sans',system-ui,sans-serif;
+    --serif-font:'Source Serif 4',serif;
+    --scale:1;
+    --pad-x:96px;
+    --pad-y:96px;
+  }
+  /* ──────────── MOOD: EDITORIAL ──────────── */
+  deck-stage[data-mood="editorial"]{
+    --navy:#2B2118;
+    --navy-2:#3D3024;
+    --ink:#2B2118;
+    --bg:#F4EDDF;
+    --paper:#FBF6EA;
+    --teal:#8C5A2C;
+    --amber:#C8763A;
+    --rule:#D9CDB4;
+    --muted:#6E5C46;
+    --soft:#EBE2CD;
+    --shell:#2B2118;
+    --display-font:'Fraunces',serif;
+    --serif-font:'Fraunces',serif;
+  }
+  deck-stage[data-mood="editorial"] section{ font-family:'Fraunces',serif; }
+  deck-stage[data-mood="editorial"] h1.deck,
+  deck-stage[data-mood="editorial"] h2.deck,
+  deck-stage[data-mood="editorial"] h3.deck{ font-family:'Fraunces',serif; font-weight:500; letter-spacing:-.01em; }
+  deck-stage[data-mood="editorial"] .eyebrow{ font-family:'Fraunces',serif; font-style:italic; text-transform:none; letter-spacing:.04em; }
+  deck-stage[data-mood="editorial"] section::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:radial-gradient(rgba(110,92,70,.08) 1px, transparent 1px);
+    background-size:3px 3px; mix-blend-mode:multiply;
+  }
+  /* ──────────── MOOD: NOCTURNE ──────────── */
+  deck-stage[data-mood="nocturne"]{
+    --navy:#E8ECF2;
+    --navy-2:#C9D1DD;
+    --ink:#E8ECF2;
+    --bg:#0E1117;
+    --paper:#161B23;
+    --teal:#5EE6D9;
+    --amber:#FFB861;
+    --rule:#28303C;
+    --muted:#8A95A8;
+    --soft:#1B2230;
+    --shell:#070A0F;
+  }
+  deck-stage[data-mood="nocturne"] table.t{ background:var(--paper); }
+  deck-stage[data-mood="nocturne"] table.t thead th{ background:#1F2734; color:var(--muted); }
+  deck-stage[data-mood="nocturne"] table.t tbody tr:nth-child(even){ background:rgba(94,230,217,.04); }
+  deck-stage[data-mood="nocturne"] pre.code{ background:#0B0F16; color:#D8E0EC; border-color:#28303C; }
+  deck-stage[data-mood="nocturne"] .tok-key{ color:#5EE6D9; }
+  deck-stage[data-mood="nocturne"] .tok-str{ color:#FFB861; }
+  deck-stage[data-mood="nocturne"] .tok-num{ color:#9FC5FF; }
+  deck-stage[data-mood="nocturne"] .tok-pun{ color:#5C6675; }
+  deck-stage[data-mood="nocturne"] .chip{ background:var(--soft); color:var(--muted); border-color:var(--rule); }
+
+  /* ──────────── DENSITY ──────────── */
+  deck-stage[data-density="spacious"]{ --scale:1.08; --pad-x:120px; --pad-y:112px; }
+  deck-stage[data-density="standard"]{ --scale:1; --pad-x:96px; --pad-y:96px; }
+  deck-stage[data-density="dense"]{ --scale:.88; --pad-x:72px; --pad-y:72px; }
+
+  html,body{margin:0;padding:0;background:var(--shell);}
+  deck-stage{ background:var(--shell); }
+  section{
+    width:1920px; height:1080px;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--display-font);
+    position:relative;
+    overflow:hidden;
+    font-feature-settings:"ss01","cv11","tnum";
+    -webkit-font-smoothing:antialiased;
+  }
+  /* tabular numbers helper */
+  .tab{font-variant-numeric:tabular-nums;}
+
+  /* footer */
+  .footer{
+    position:absolute; left:80px; right:80px; bottom:36px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:13.5px; letter-spacing:.02em;
+    color:var(--ink); opacity:.30;
+    font-weight:500;
+  }
+  .footer .dot{ display:inline-block; width:3px; height:3px; border-radius:50%; background:currentColor; vertical-align:middle; margin:0 12px; }
+  .refs{
+    position:absolute; left:80px; right:80px; bottom:80px;
+    font-style:italic; font-size:13px; line-height:1.55;
+    color:var(--muted); max-width:1760px;
+  }
+  .refs::before{
+    content:""; display:block; width:48px; height:1px; background:var(--rule); margin-bottom:10px;
+  }
+
+  /* eyebrow */
+  .eyebrow{
+    font-size:13px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--teal); font-weight:600;
+  }
+  .eyebrow.amber{ color:var(--amber); }
+  .eyebrow.navy{ color:var(--navy); opacity:.55; }
+
+  h1.deck{ font-size:calc(104px * var(--scale)); line-height:.98; letter-spacing:-.025em; font-weight:700; margin:0; }
+  h2.deck{ font-size:calc(68px * var(--scale)); line-height:1.02; letter-spacing:-.018em; font-weight:600; margin:0; color:var(--navy); }
+  h3.deck{ font-size:calc(36px * var(--scale)); line-height:1.15; letter-spacing:-.01em; font-weight:600; margin:0; color:var(--navy); }
+  .body-l{ font-size:calc(26px * var(--scale)); line-height:1.4; font-weight:400; color:var(--ink); }
+  .body-m{ font-size:calc(22px * var(--scale)); line-height:1.45; font-weight:400; color:var(--ink); }
+
+  /* code */
+  pre.code{
+    font-family:'JetBrains Mono',ui-monospace,monospace;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:14px;
+    padding:32px 36px;
+    font-size:20px; line-height:1.55;
+    color:#1B2A41;
+    margin:0;
+    box-shadow:0 1px 0 rgba(10,35,66,.03);
+    overflow:hidden;
+  }
+  .tok-key{ color:#0A6E78; }
+  .tok-str{ color:#7A4B00; }
+  .tok-num{ color:#234E70; }
+  .tok-pun{ color:#8893A4; }
+  .tok-cmt{ color:#8893A4; font-style:italic; }
+
+  /* generic ui */
+  .badge{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 18px; border-radius:999px;
+    background:var(--navy); color:#fff;
+    font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .badge.amber{ background:var(--amber); color:#3a2700; }
+  .badge.teal{ background:var(--teal); color:#fff; }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px; border-radius:6px;
+    background:var(--paper); border:1px solid var(--rule);
+    font-size:14px; font-weight:500; color:var(--muted);
+  }
+
+  /* line icons */
+  .ic{ width:1em; height:1em; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; display:inline-block; vertical-align:-0.12em; }
+
+  /* tables */
+  table.t{
+    width:100%; border-collapse:collapse; font-size:20px;
+    background:var(--paper); border:1px solid var(--rule); border-radius:12px; overflow:hidden;
+  }
+  table.t th, table.t td{
+    text-align:left; padding:22px 24px; vertical-align:top;
+    border-bottom:1px solid var(--rule);
+  }
+  table.t tr:last-child td{ border-bottom:0; }
+  table.t thead th{
+    font-size:13px; letter-spacing:.14em; text-transform:uppercase; font-weight:600; color:var(--muted);
+    background:#FAFBFD;
+  }
+  table.t tbody tr:nth-child(even){ background:rgba(10,35,66,.04); }
+
+  /* slide layout helpers */
+  .pad{ padding:var(--pad-y) var(--pad-x) calc(var(--pad-y) + 44px) var(--pad-x); height:100%; box-sizing:border-box; display:flex; flex-direction:column; }
+  .head{ display:flex; align-items:flex-start; justify-content:space-between; gap:40px; margin-bottom:40px; }
+  .head .left{ display:flex; flex-direction:column; gap:14px; }
+
+  /* cover pattern */
+  .cover-grid{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size:80px 80px;
+    mask-image:radial-gradient(ellipse at 70% 40%, #000 0%, transparent 75%);
+  }
+
+  /* number pill */
+  .num{
+    width:48px; height:48px; border-radius:50%;
+    background:var(--navy); color:#fff;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:20px;
+    flex-shrink:0;
+  }
+  .num.teal{ background:var(--teal); }
+  .num.amber{ background:var(--amber); color:#3a2700; }
+
+[data-voice="conv"] [data-voice-tech]{ display:none !important; }
+  [data-voice="tech"] [data-voice-conv]{ display:none !important; }
+  /* voice defaults: tech (hide conv until a voice is set) */
+  [data-voice-conv]{ display:none; }
+  [data-voice="conv"] [data-voice-conv]{ display:revert !important; }
+
+</style>
+</head>
+<body>
+
+<script type="application/json" id="speaker-notes">
+[
+"Boa tarde. Nos próximos 15 minutos, vou mostrar como sair do template estruturado e chegar ao texto final do laudo com edição mínima — e por que, em 2026, isso já é tecnicamente possível, mas só funciona com três peças coladas: template estruturado, RAG e LLM domain-specific. E vou mostrar o que a régua regulatória brasileira — que entra em vigor em agosto deste ano — exige de cada um de nós.",
+"Todo mundo aqui já escreveu o mesmo parágrafo de impressão pela milésima vez. O template existe, o RadReport.org tem mais de 200 modelos, mas a gente ainda digita o texto do zero. Em 2024, quase metade dos radiologistas americanos relatou burnout, e boa parte disso é fadiga de digitação. A pergunta que organiza essa palestra é simples: dado um template e os achados ditados, quanto do texto final realmente precisa do humano gerando — e quanto pode ser apenas revisado?",
+"Essa é a tese da palestra em uma frase. Não é um LLM que resolve. É a combinação de três peças técnicas — template, RAG e modelo domain-specific com saída estruturada — em cima de uma régua regulatória brasileira que, em agosto de 2026, deixa de ser opcional. Vou destrinchar cada uma dessas peças nos próximos minutos.",
+"Quatro etapas. Um: template. Não é o cabeçalho do Word — é um schema de campos com terminologia controlada e elementos de dados comuns. Dois: você dita os achados em linguagem natural, ASR transcreve — em 2026 temos MedASR e Whisper fine-tuned para PT-BR médico com WER abaixo de 6%. Três: o LLM gera o texto dentro do schema do template, ancorado em RAG sobre os laudos prévios do paciente e nas guidelines aplicáveis. Quatro: o radiologista revisa, edita o que for necessário e assina. Quanto melhor as três primeiras etapas, menor a edição na quarta.",
+"Esta é a arquitetura que vou mostrar funcionando. É n8n auto-hospedado — sem licença — com Whisper para PT-BR, RAG com Qdrant sobre os laudos do próprio serviço, e o LLM rodando no servidor da instituição. O Telegram aqui é só a interface da demo: em produção, o canal é dentro do RIS, porque Telegram não é LGPD-compliant para PHI. Vejam o tempo entre eu ditar e o laudo estruturado aparecer pronto para revisão. Isso é reproduzível em qualquer serviço com uma única GPU H100 e amortiza em meses.",
+"Três famílias. Comercial cloud — Rad AI Impressions é hoje o estado da arte clínico, com paridade com humano em laudos oncológicos publicada na npj Digital Medicine há um mês. PowerScribe One com Dragon Copilot domina nos EUA. API geral com BAA — GPT-5 via Azure, Claude via Bedrock, Gemini via Vertex — esses são os três que vocês podem usar com paciente, com cláusulas-padrão da ANPD em vigor desde agosto de 2025. Open-source on-prem — MedGemma 27B atinge 87 por cento no MedQA com um décimo do custo do DeepSeek; Llama 3.3 70B é comparável a GPT-4o em radiologia. Para quem quer LGPD blindada, esse é o caminho.",
+"RAG é o que separa um chat com um LLM genérico de um assistente que conhece o seu paciente e suas guidelines. A ideia é simples: antes de gerar texto, o sistema busca em uma base vetorial os laudos prévios desse paciente, a guideline aplicável — Fleischner para o nódulo pulmonar, BI-RADS para a mama — e injeta isso no prompt. O LLM gera ancorado em fatos recuperados, não em memória de treinamento. Estudos como o de Tozuka mostraram que RAG derruba alucinações em estadiamento TNM, e há um paper recente em Diagnostic and Interventional Radiology mostrando o mesmo para BI-RADS.",
+"Essa é a peça que mata a alucinação de formato e força o modelo a obedecer ao template. Em vez de pedir gere um laudo, você passa um JSON Schema: o LLM só pode preencher campos válidos, com tipos válidos, com valores de uma lista controlada. O paper do vLLM-structure mostrou que essa abordagem melhora o Llama 3.1 405B em mais de 10 por cento e supera o GPT-4o em 17 por cento — sem schema o GPT-4o, com schema o open-source ganha. Function calling, JSON mode, Outlines, Guidance — todas variantes da mesma ideia.",
+"Esse é o paper que mudou a discussão. Saiu há um mês na npj Digital Medicine. Duzentos laudos de tomografia oncológica, avaliação cega, multi-stakeholder. O modelo domain-specific da Rad AI atingiu paridade com radiologista humano. O LLM genérico — mesmo no estado da arte — foi significativamente desfavorecido, com Cohen's h acima de 1, ou seja, efeito grande. E na implementação clínica real, o Carle Health relata que 90 a 95 por cento das impressões não precisam de edição. Isso não é hype — é evidência publicada.",
+"Se vocês forem validar uma ferramenta dessa em um serviço, não usem BLEU e ROUGE puros. Eles medem sobreposição de palavras — não capturam se o laudo está clinicamente correto. Usem GREEN, que é open-source da Stanford e correlaciona com preferência de especialistas; RadFact da Microsoft, que checa factualidade sentença a sentença e até localização espacial; F1-RadGraph para granularidade clínica; e avaliação humana em seis eixos. E reportem tudo conforme o TRIPOD-LLM, publicado na Nature Medicine em 2025 — é o checklist obrigatório para publicação de estudo com LLM.",
+"Vamos ser honestos com a evidência. Alucinação não desapareceu. O paper recente da Asgari na npj Digital Medicine mostra um e meio por cento em sumarização clínica — pequeno, mas existe. Em laudos completos sobe para 3 a 6. Em VLMs com input visual, até 15. Tem drift silencioso: o GPT-3.5 piorou ao longo de 2024 e 2025 sem aviso. Tem vieses do LLM-juiz: ele prefere respostas mais longas, prefere o próprio output, prefere a segunda posição. E — crítico — modelos com input textual acertam mais que com input visual hoje. Por isso: edição mínima sim, edição zero não. E o médico continua responsável.",
+"Essa resolução muda o jogo. Foi publicada em fevereiro deste ano e entra em vigor em agosto — antes do JPR de 2027. Cinco deveres do médico que vocês precisam internalizar: a IA é apoio, o médico é responsável final, é obrigatório julgamento crítico, é obrigatório conhecer as limitações, e é obrigatório registrar no prontuário que aquele laudo foi gerado com auxílio de IA. Instituições com IA própria precisam ter Comissão de IA, classificação de risco — laudo assistido vai cair em médio a alto risco — e governança formal. E é vedado delegar à IA a comunicação do diagnóstico ao paciente.",
+"Resumo da régua. LGPD: dado de saúde é sensível, multa de até 2 por cento do faturamento ou 50 milhões de reais. ANPD Resolução 19 de 2024: desde agosto de 2025 vocês precisam de cláusulas-padrão contratuais para transferir dados a APIs estrangeiras — OpenAI, Anthropic, Google, Microsoft. Sem isso, infração. PL 2.338: Marco Legal da IA, aprovado por unanimidade no Senado em dezembro de 2024, em tramitação na Câmara — quando virar lei, terá hierarquia superior à resolução do CFM. ISO/IEC 42001: norma internacional de governança de IA, voluntária mas excelente evidência objetiva. E o recado prático: ChatGPT pessoal com dados de paciente está vedado. Use a API com BAA, ou on-premise.",
+"Seis pontos para levar para casa. Um: edição mínima não é edição zero — você continua o responsável. Dois: a stack que funciona é template mais RAG mais modelo domain-specific com saída estruturada — não é um único produto mágico. Três: a CFM 2.454 entra em vigor em agosto — comecem o inventário hoje. Quatro: sem BAA e sem cláusulas ANPD, é infração — ChatGPT pessoal com paciente está fora. Cinco: usem as métricas certas, GREEN, RadFact, F1-RadGraph, e reportem por TRIPOD-LLM. Seis: open-source on-prem é absolutamente viável em uma única H100. E o recado final: o radiologista não vai ser substituído pela IA. Vai ser substituído pelo radiologista que sabe usar IA com governança.",
+"Obrigado. Os QR codes levam ao dossiê completo com as 40 e poucas referências usadas e à demo do bot rodando ao vivo. Estou disponível para perguntas agora e depois no corredor."
+]
+</script>
+
+<deck-stage>
+
+<!-- ============== SLIDE 1 — COVER ============== -->
+<section data-screen-label="01 Capa" class="dark-slide" style="background:var(--shell);color:var(--bg);">
+  <div class="cover-grid"></div>
+  <!-- subtle abstract geometric mark -->
+  <svg width="540" height="540" viewBox="0 0 540 540" style="position:absolute; right:120px; top:50%; transform:translateY(-50%); opacity:.85;">
+    <defs>
+      <linearGradient id="cg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#00A8B5" stop-opacity=".9"/>
+        <stop offset="1" stop-color="#00A8B5" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <g fill="none" stroke="#00A8B5" stroke-width="1">
+      <circle cx="270" cy="270" r="260" stroke-opacity=".25"/>
+      <circle cx="270" cy="270" r="200" stroke-opacity=".35"/>
+      <circle cx="270" cy="270" r="140" stroke-opacity=".45"/>
+      <circle cx="270" cy="270" r="80" stroke-opacity=".6"/>
+    </g>
+    <g stroke="#F5F7FA" stroke-width="1" stroke-opacity=".25">
+      <line x1="0" y1="270" x2="540" y2="270"/>
+      <line x1="270" y1="0" x2="270" y2="540"/>
+    </g>
+    <circle cx="270" cy="270" r="6" fill="#F4A300"/>
+    <circle cx="430" cy="180" r="4" fill="#00A8B5"/>
+    <circle cx="180" cy="380" r="3" fill="#F5F7FA"/>
+  </svg>
+
+  <div style="position:absolute; left:120px; top:120px; display:flex; align-items:center; gap:18px;">
+    <div style="width:36px; height:1px; background:#00A8B5;"></div>
+    <span style="font-size:13px; letter-spacing:.22em; text-transform:uppercase; color:#00A8B5; font-weight:600;">JPR 2026 · Otimização de Laudos com IA</span>
+  </div>
+
+  <div style="position:absolute; left:120px; bottom:240px; max-width:1100px;">
+    <h1 class="deck" style="color:#F5F7FA;">Laudo Assistido<br/>por LLM</h1>
+    <div style="height:32px;"></div>
+    <div style="font-family:'Source Serif 4',serif; font-style:italic; font-size:42px; line-height:1.2; color:#F5F7FA; opacity:.85; max-width:900px; font-weight:400;">
+      Do template ao texto final<br/>com edição mínima
+    </div>
+  </div>
+
+  <div style="position:absolute; left:120px; bottom:120px; display:flex; align-items:flex-end; gap:64px; color:#F5F7FA;">
+    <div>
+      <div style="font-size:13px; letter-spacing:.18em; text-transform:uppercase; opacity:.5; margin-bottom:6px;">Speaker</div>
+      <div style="font-size:22px; font-weight:600;">Gustavo C. A. Corradi</div>
+      <div style="font-size:18px; opacity:.65;">Radiologista</div>
+    </div>
+    <div>
+      <div style="font-size:13px; letter-spacing:.18em; text-transform:uppercase; opacity:.5; margin-bottom:6px;">Sessão</div>
+      <div style="font-size:22px; font-weight:600;">Além do Básico</div>
+      <div style="font-size:18px; opacity:.65;">01 de maio de 2026</div>
+    </div>
+  </div>
+
+  <div class="footer" style="color:#F5F7FA; opacity:.45;">
+    <span>01 / 15</span>
+    <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM — do template ao texto final com edição mínima</span>
+  </div>
+</section>
+
+<!-- ============== SLIDE 2 — PROBLEM HOOK ============== -->
+<section data-screen-label="02 Problema">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">O problema</div>
+        <h2 class="deck">O laudo de hoje</h2>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:64px; margin-top:40px;">
+      <div style="border-top:1px solid var(--rule); padding-top:32px;">
+        <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Tempo por TC de tórax</div>
+        <div class="tab" style="font-size:200px; line-height:.95; font-weight:600; color:var(--navy); letter-spacing:-.04em; margin-top:12px;">
+          8<span style="color:var(--teal);">–</span>12<span style="font-size:60px; color:var(--muted); font-weight:400; margin-left:14px;">min</span>
+        </div>
+        <div style="font-size:20px; color:var(--muted); margin-top:8px;">por exame, médio em prática contemporânea</div>
+      </div>
+      <div style="border-top:1px solid var(--rule); padding-top:32px;">
+        <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Burnout · radiologistas</div>
+        <div class="tab" style="font-size:200px; line-height:.95; font-weight:600; color:var(--navy); letter-spacing:-.04em; margin-top:12px;">
+          49<span style="color:var(--teal);">%</span>
+        </div>
+        <div style="font-size:20px; color:var(--muted); margin-top:8px;">ACR Workforce Survey, 2024</div>
+      </div>
+    </div>
+
+    <div style="margin-top:64px; display:flex; flex-direction:column; gap:18px; max-width:1500px;">
+      <div style="display:flex; gap:18px; align-items:baseline;">
+        <span style="color:var(--teal); font-size:18px;">—</span>
+        <div class="body-l">Variabilidade interobservador alta na <strong>impressão diagnóstica</strong>.</div>
+      </div>
+      <div style="display:flex; gap:18px; align-items:baseline;">
+        <span style="color:var(--teal); font-size:18px;">—</span>
+        <div class="body-l">O <strong>template existe</strong> — mas o texto ainda é escrito “à mão”.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:48px;">
+      <div data-voice-tech style="font-family:var(--serif-font); font-style:italic; font-size:46px; line-height:1.2; color:var(--navy); max-width:1500px; font-weight:400;">
+        Quanto desse texto realmente precisa do humano?
+      </div>
+      <div data-voice-conv style="font-family:var(--serif-font); font-style:italic; font-size:46px; line-height:1.2; color:var(--navy); max-width:1500px; font-weight:400;">
+        Honestamente — quanto disso aqui você ainda precisa <em>escrever</em>?
+      </div>
+    </div>
+
+    <div class="refs">ACR Commission on Human Resources, Workforce Survey 2024 (JACR). · Brady AP, Insights Imaging 2018 — Discrepancy and error in radiology. · RadReport.org / RSNA — biblioteca pública de templates estruturados.</div>
+    <div class="footer">
+      <span>02 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 3 — THESIS ============== -->
+<section data-screen-label="03 Tese">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">A palestra em uma frase</div>
+        <h2 class="deck">Tese</h2>
+      </div>
+    </div>
+
+    <div style="margin-top:24px; max-width:1700px;">
+      <div data-voice-tech style="font-family:var(--serif-font); font-size:46px; line-height:1.28; color:var(--navy); font-weight:400;">
+        Em 2026 é possível ir do <em>template</em> ao <em>texto final</em><br/>
+        com <strong style="font-style:normal;">edição mínima</strong> — <span style="color:var(--teal); font-style:italic;">se e somente se</span> a stack tiver:
+      </div>
+      <div data-voice-conv style="font-family:var(--serif-font); font-size:46px; line-height:1.28; color:var(--navy); font-weight:400;">
+        A gente já consegue sair do <em>template</em> e chegar no <em>laudo final</em><br/>
+        quase sem digitar — <span style="color:var(--teal); font-style:italic;">desde que</span> três peças estejam coladas:
+      </div>
+    </div>
+
+    <div style="margin-top:60px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:32px;">
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:36px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+          <div class="num">1</div>
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:24px; color:var(--teal);"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <div style="font-size:26px; font-weight:600; color:var(--navy); line-height:1.2;">Template estruturado</div>
+        <div style="margin-top:10px; font-size:18px; color:var(--muted); line-height:1.45;">RadReport · CDE · RadLex<br/>Schema interoperável, não cabeçalho de Word</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:36px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+          <div class="num">2</div>
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:24px; color:var(--teal);"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </div>
+        <div style="font-size:26px; font-weight:600; color:var(--navy); line-height:1.2;">RAG</div>
+        <div style="margin-top:10px; font-size:18px; color:var(--muted); line-height:1.45;">Laudos prévios + guidelines<br/>Geração ancorada em fatos do paciente</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:36px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+          <div class="num">3</div>
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:24px; color:var(--teal);"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        </div>
+        <div style="font-size:26px; font-weight:600; color:var(--navy); line-height:1.2;">LLM domain-specific</div>
+        <div style="margin-top:10px; font-size:18px; color:var(--muted); line-height:1.45;">Decodificação restrita por schema<br/>Vertical &gt; horizontal em saúde</div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:48px; border-top:1px solid var(--rule); display:flex; align-items:center; gap:24px;">
+      <svg class="ic" viewBox="0 0 24 24" style="font-size:32px; color:var(--amber); flex-shrink:0;"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg>
+      <div class="body-l" style="font-size:24px;">E se a régua <strong>CFM 2.454/2026 + LGPD + ANPD 19/2024</strong> for o <em>piso</em>, não o teto.</div>
+    </div>
+
+    <div class="refs">Rad AI / Moffitt — npj Digital Medicine 2026 (doi:10.1038/s41746-026-02586-6). · Resolução CFM nº 2.454/2026 — vacatio legis 180 dias, vigência ≈ agosto/2026.</div>
+    <div class="footer">
+      <span>03 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 4 — PIPELINE ============== -->
+<section data-screen-label="04 Pipeline">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Visão geral</div>
+        <h2 class="deck">O pipeline</h2>
+      </div>
+    </div>
+
+    <div style="margin-top:48px; display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; align-items:stretch; gap:0;">
+      <!-- node template -->
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:32px 28px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:30px; color:var(--teal);"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Etapa 01</div>
+        </div>
+        <div style="font-size:24px; font-weight:600; color:var(--navy); line-height:1.15;">Template estruturado</div>
+        <div style="margin-top:14px; font-size:17px; color:var(--muted); line-height:1.45;">RadReport · CDE · RadLex</div>
+      </div>
+      <!-- arrow -->
+      <div style="display:flex; align-items:center; padding:0 16px; color:var(--navy); opacity:.4;">
+        <svg width="44" height="20"><path d="M0 10 H38 M30 4 l8 6 -8 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:32px 28px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:30px; color:var(--teal);"><path d="M12 2v12"/><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Etapa 02</div>
+        </div>
+        <div style="font-size:24px; font-weight:600; color:var(--navy); line-height:1.15;">Achados (ditado)</div>
+        <div style="margin-top:14px; font-size:17px; color:var(--muted); line-height:1.45;">ASR — MedASR / Whisper PT-BR · WER &lt; 6%</div>
+      </div>
+      <div style="display:flex; align-items:center; padding:0 16px; color:var(--navy); opacity:.4;">
+        <svg width="44" height="20"><path d="M0 10 H38 M30 4 l8 6 -8 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:32px 28px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:30px; color:var(--teal);"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Etapa 03</div>
+        </div>
+        <div style="font-size:24px; font-weight:600; color:var(--navy); line-height:1.15;">Geração restrita</div>
+        <div style="margin-top:14px; font-size:17px; color:var(--muted); line-height:1.45;">LLM + RAG + JSON Schema</div>
+      </div>
+      <div style="display:flex; align-items:center; padding:0 16px; color:var(--navy); opacity:.4;">
+        <svg width="44" height="20"><path d="M0 10 H38 M30 4 l8 6 -8 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:32px 28px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:30px; color:var(--teal);"><path d="M20 6 9 17l-5-5"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Etapa 04</div>
+        </div>
+        <div style="font-size:24px; font-weight:600; color:var(--navy); line-height:1.15;">Revisão humana</div>
+        <div style="margin-top:14px; font-size:17px; color:var(--muted); line-height:1.45;">Edição mínima + assinatura</div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:64px; display:flex; align-items:center; gap:24px; max-width:1500px;">
+      <div style="width:48px; height:1px; background:var(--teal);"></div>
+      <div class="body-l" style="font-style:italic;">A “edição mínima” só existe se as <strong style="font-style:normal;">quatro etapas</strong> forem boas. O elo mais fraco define o resultado.</div>
+    </div>
+
+    <div class="refs">RSNA RadReport.org — Common Data Elements + RadLex. · Google Research, MedGemma technical report 2026 — MedASR (105M, WER 5,2% em RX vs 12,5% Whisper-large-v3). · arXiv:2409.18319 — vLLM-structure: structured decoding em laudos.</div>
+    <div class="footer">
+      <span>04 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 5 — DEMO ARCHITECTURE ============== -->
+<section data-screen-label="05 Demo">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Demo prática</div>
+        <h2 class="deck">Bot de laudo em n8n + Telegram</h2>
+      </div>
+      <div class="badge amber" style="align-self:flex-start;">
+        <svg class="ic" viewBox="0 0 24 24" style="font-size:16px;"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+        Telegram apenas para protótipo
+      </div>
+    </div>
+
+    <div style="margin-top:24px; display:grid; grid-template-columns:1.1fr 1fr; gap:48px; flex:1;">
+      <!-- vertical architecture -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- radiologist -->
+        <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:18px 22px; display:flex; align-items:center; gap:16px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:26px; color:var(--navy);"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          <div>
+            <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Origem</div>
+            <div style="font-size:20px; font-weight:600; color:var(--navy);">Radiologista — áudio</div>
+          </div>
+        </div>
+        <div style="text-align:center; color:var(--navy); opacity:.4;">
+          <svg width="20" height="28"><path d="M10 0 V22 M4 16 l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:18px 22px; display:flex; align-items:center; gap:16px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:26px; color:var(--navy);"><path d="m22 2-11 11"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          <div>
+            <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Interface</div>
+            <div style="font-size:20px; font-weight:600; color:var(--navy);">Telegram bot · webhook</div>
+          </div>
+        </div>
+        <div style="text-align:center; color:var(--navy); opacity:.4;">
+          <svg width="20" height="28"><path d="M10 0 V22 M4 16 l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <!-- n8n container -->
+        <div style="background:var(--paper); border:2px solid var(--navy); border-radius:14px; padding:24px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:24px; color:var(--navy);"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+            <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--navy); font-weight:700;">n8n auto-hospedado</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; background:var(--soft); border-radius:8px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--teal); font-weight:600;">├</span>
+              <strong style="font-size:17px; color:var(--navy);">ASR</strong>
+              <span style="font-size:16px; color:var(--muted);">Whisper-PT-BR / MedASR</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; background:var(--soft); border-radius:8px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--teal); font-weight:600;">├</span>
+              <strong style="font-size:17px; color:var(--navy);">RAG</strong>
+              <span style="font-size:16px; color:var(--muted);">Qdrant + laudos prévios + guidelines</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; background:var(--soft); border-radius:8px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--teal); font-weight:600;">├</span>
+              <strong style="font-size:17px; color:var(--navy);">LLM</strong>
+              <span style="font-size:16px; color:var(--muted);">Llama-3.3 70B / MedGemma 27B / GPT-5</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; background:var(--soft); border-radius:8px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--teal); font-weight:600;">├</span>
+              <strong style="font-size:17px; color:var(--navy);">Validator</strong>
+              <span style="font-size:16px; color:var(--muted);">JSON Schema (template RadReport)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; background:var(--soft); border-radius:8px;">
+              <span style="font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--teal); font-weight:600;">└</span>
+              <strong style="font-size:17px; color:var(--navy);">Human-in-the-loop</strong>
+              <span style="font-size:16px; color:var(--muted);">→ RIS via HL7 / FHIR</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- callout column -->
+      <div style="display:flex; flex-direction:column; gap:32px;">
+        <div style="background:var(--navy); color:#fff; border-radius:14px; padding:36px; flex:1; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--teal); font-weight:600; margin-bottom:12px;">Stack reproduzível</div>
+          <div class="tab" style="font-size:88px; line-height:1; font-weight:600; letter-spacing:-.03em;">1× H100</div>
+          <div style="font-size:22px; opacity:.75; margin-top:10px;">≈ R$ 200k · amortizada em meses</div>
+          <div style="height:1px; background:rgba(245,247,250,.15); margin:28px 0;"></div>
+          <div style="font-size:18px; line-height:1.5; opacity:.85;">100% open-source. Sem licença SaaS. Dados não saem do hospital.</div>
+        </div>
+
+        <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid var(--amber); border-radius:8px; padding:24px 28px;">
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:24px; color:var(--amber); flex-shrink:0; margin-top:2px;"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            <div>
+              <div style="font-size:18px; font-weight:600; color:var(--navy); margin-bottom:6px;">Em produção: canal institucional</div>
+              <div style="font-size:16px; color:var(--muted); line-height:1.5;">Telegram não tem certificação adequada para PHI. Use canais dentro do RIS, com cláusulas LGPD e SCC ANPD.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refs">n8n.io — Sustainable Use License, AI Agent + MCP. · European Radiology 2024, PMC11913902 — estruturação de laudos com Llama-2-70B on-prem. · CFM 2.454/2026, art. 4º-V — registro do uso de IA no prontuário.</div>
+    <div class="footer">
+      <span>05 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 6 — COMMERCIAL VS OS ============== -->
+<section data-screen-label="06 Comercial vs Open-source">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Mercado · 2026</div>
+        <h2 class="deck">Ferramentas — quem entrega o quê?</h2>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;">
+      <table class="t">
+        <thead>
+          <tr>
+            <th style="width:280px;">Categoria</th>
+            <th>Top representantes</th>
+            <th style="width:340px;">Forte em</th>
+            <th style="width:340px;">Ponto fraco</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="width:8px; height:36px; background:var(--teal); border-radius:2px;"></span>
+                <div>
+                  <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Categoria 01</div>
+                  <div style="font-weight:600; color:var(--navy); font-size:22px; margin-top:2px;">Comercial cloud</div>
+                </div>
+              </div>
+            </td>
+            <td><strong>Rad AI</strong>, PowerScribe One + Dragon Copilot, Aidoc CARE</td>
+            <td>Integração PACS/RIS, BAA, suporte enterprise</td>
+            <td>PT-BR limitado, custo, dependência de vendor</td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="width:8px; height:36px; background:var(--navy); border-radius:2px;"></span>
+                <div>
+                  <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Categoria 02</div>
+                  <div style="font-weight:600; color:var(--navy); font-size:22px; margin-top:2px;">API LLM geral + BAA</div>
+                </div>
+              </div>
+            </td>
+            <td>GPT-5 (Azure), Claude (Bedrock), Gemini (Vertex)</td>
+            <td>PT-BR, raciocínio, custo variável</td>
+            <td>Drift silencioso, transferência internacional</td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="width:8px; height:36px; background:var(--amber); border-radius:2px;"></span>
+                <div>
+                  <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Categoria 03</div>
+                  <div style="font-weight:600; color:var(--navy); font-size:22px; margin-top:2px;">Open-source on-prem</div>
+                </div>
+              </div>
+            </td>
+            <td>MedGemma 27B, Llama-3.3 70B, MAIRA-2, CheXagent</td>
+            <td>LGPD, custo marginal, soberania de dado</td>
+            <td>Esforço de engenharia e MLOps</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:auto; padding-top:48px; display:flex; gap:20px;">
+      <div style="flex:1; background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:20px 24px; display:flex; align-items:center; gap:18px;">
+        <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--teal);"><path d="M12 2 15 8l7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg>
+        <div>
+          <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">KLAS Top-5 AI Partner 2025</div>
+          <div style="font-size:22px; font-weight:600; color:var(--navy);">Rad AI</div>
+        </div>
+      </div>
+      <div style="flex:1; background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:20px 24px; display:flex; align-items:center; gap:18px;">
+        <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--amber);"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg>
+        <div>
+          <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">LGPD-friendly</div>
+          <div style="font-size:22px; font-weight:600; color:var(--navy);">On-prem com Llama / MedGemma / Mistral</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refs">npj Digital Medicine 2026 (Rad AI / Moffitt). · KLAS Report 2025 — top AI partners em radiologia. · Li D et al., Clin Imaging 2025;118:110382 — GPT-4o vs Llama-3-70B em radiologia. · Google Research blog 2026 — MedGemma 27B / 1.5.</div>
+    <div class="footer">
+      <span>06 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 7 — RAG ============== -->
+<section data-screen-label="07 RAG">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Peça 1 da stack</div>
+        <h2 class="deck">RAG — ancorando o LLM na realidade do paciente</h2>
+      </div>
+    </div>
+
+    <div style="margin-top:24px; display:grid; grid-template-columns:1fr 1.3fr; gap:48px; flex:1;">
+      <!-- left: vector store stack -->
+      <div>
+        <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:18px;">Vector store</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div style="background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:18px 22px; display:flex; align-items:center; gap:14px;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:var(--teal);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+            <div>
+              <div style="font-size:18px; font-weight:600; color:var(--navy);">Laudos prévios</div>
+              <div style="font-size:14px; color:var(--muted);">do próprio paciente · longitudinal</div>
+            </div>
+          </div>
+          <div style="background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:18px 22px; display:flex; align-items:center; gap:14px;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:var(--teal);"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/></svg>
+            <div>
+              <div style="font-size:18px; font-weight:600; color:var(--navy);">Fleischner Society</div>
+              <div style="font-size:14px; color:var(--muted);">manejo de nódulo pulmonar incidental</div>
+            </div>
+          </div>
+          <div style="background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:18px 22px; display:flex; align-items:center; gap:14px;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:var(--teal);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div>
+              <div style="font-size:18px; font-weight:600; color:var(--navy);">BI · LI · PI · TI-RADS</div>
+              <div style="font-size:14px; color:var(--muted);">atlases ACR — terminologia controlada</div>
+            </div>
+          </div>
+          <div style="background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:18px 22px; display:flex; align-items:center; gap:14px;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:var(--teal);"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+            <div>
+              <div style="font-size:18px; font-weight:600; color:var(--navy);">Protocolos institucionais</div>
+              <div style="font-size:14px; color:var(--muted);">incidentaloma, follow-up, seguimento</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: pipeline -->
+      <div style="display:flex; flex-direction:column;">
+        <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:18px;">Pipeline</div>
+        <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:36px; flex:1; display:flex; flex-direction:column; justify-content:center; gap:18px;">
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center;">
+            <div style="width:68px; height:68px; border-radius:14px; background:var(--soft); border:1px solid var(--rule); display:flex; align-items:center; justify-content:center;">
+              <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--navy);"><path d="M12 2v12"/><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+            </div>
+            <div>
+              <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Input</div>
+              <div style="font-size:22px; font-weight:600; color:var(--navy);">Achados ditados</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; padding-left:28px; color:var(--navy); opacity:.4;">
+            <svg width="20" height="22"><path d="M10 0 V18 M4 12 l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted);">embed → search top-k</span>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center;">
+            <div style="width:68px; height:68px; border-radius:14px; background:var(--soft); border:1px solid var(--rule); display:flex; align-items:center; justify-content:center;">
+              <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--navy);"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <div>
+              <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Retrieval</div>
+              <div style="font-size:22px; font-weight:600; color:var(--navy);">Vector store + prompt</div>
+              <div style="font-size:15px; color:var(--muted); margin-top:2px;">contexto recuperado, ancorado em fato</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; padding-left:28px; color:var(--navy); opacity:.4;">
+            <svg width="20" height="22"><path d="M10 0 V18 M4 12 l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center;">
+            <div style="width:68px; height:68px; border-radius:14px; background:var(--navy); display:flex; align-items:center; justify-content:center;">
+              <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:#fff;"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            </div>
+            <div>
+              <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); font-weight:600;">Output</div>
+              <div style="font-size:22px; font-weight:600; color:var(--navy);">LLM → texto ancorado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:3px solid var(--teal); border-radius:8px; padding:22px 28px;">
+        <div class="tab" style="font-size:32px; font-weight:600; color:var(--navy);">↓ alucinações</div>
+        <div style="font-size:16px; color:var(--muted); margin-top:4px;">em estadiamento TNM (Tozuka et al., 2024)</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:3px solid var(--teal); border-radius:8px; padding:22px 28px;">
+        <div class="tab" style="font-size:32px; font-weight:600; color:var(--navy);">↑ acurácia</div>
+        <div style="font-size:16px; color:var(--muted); margin-top:4px;">em respostas BI-RADS (DIR 2025)</div>
+      </div>
+    </div>
+
+    <div class="refs">Tozuka R et al. 2024 — TNM staging com GPT-4o + RAG. · Diagnostic and Interventional Radiology 2025 (doi:10.4274/dir.2025.253272). · arXiv:2409.10576 (BT-RADS, IDH); 2407.15268 (FactMM-RAG); 2411.16523 (LaB-RAG).</div>
+    <div class="footer">
+      <span>07 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 8 — CONSTRAINED DECODING ============== -->
+<section data-screen-label="08 Decodificação restrita">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Peça 2 da stack</div>
+        <h2 class="deck">Decodificação restrita por template</h2>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; display:grid; grid-template-columns:1.25fr 1fr; gap:48px; flex:1;">
+      <div style="display:flex; flex-direction:column;">
+        <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:14px;">JSON Schema · contrato com o LLM</div>
+<pre class="code">{
+  <span class="tok-key">"achados"</span><span class="tok-pun">:</span> {
+    <span class="tok-key">"nodulos"</span><span class="tok-pun">:</span> [{
+      <span class="tok-key">"lado"</span><span class="tok-pun">:</span>        <span class="tok-str">"D|E"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"lobo"</span><span class="tok-pun">:</span>        <span class="tok-str">"LSD|LSE|LM|LID|LIE"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"tamanho_mm"</span><span class="tok-pun">:</span>  <span class="tok-num">"number"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"morfologia"</span><span class="tok-pun">:</span>  <span class="tok-str">"solido|subsolido|GGO"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"fleischner"</span><span class="tok-pun">:</span>  <span class="tok-str">"string"</span>
+    }]
+  }<span class="tok-pun">,</span>
+  <span class="tok-key">"impressao"</span><span class="tok-pun">:</span> [<span class="tok-str">"string"</span>]<span class="tok-pun">,</span>
+  <span class="tok-key">"recomendacao"</span><span class="tok-pun">:</span> <span class="tok-str">"string"</span>
+}</pre>
+        <div style="margin-top:18px; font-size:16px; color:var(--muted); font-style:italic; line-height:1.5;">
+          O autômato filtra logits a cada token: <strong style="font-style:normal; color:var(--navy);">impossível</strong> gerar JSON inválido.
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <div style="background:var(--navy); color:#fff; border-radius:14px; padding:40px;">
+          <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); font-weight:600;">Llama-3.1 405B</div>
+          <div class="tab" style="font-size:120px; line-height:1; font-weight:600; letter-spacing:-.04em; margin-top:12px;">
+            +10,4<span style="font-size:60px; vertical-align:18px;">%</span>
+          </div>
+          <div style="font-size:18px; opacity:.75; margin-top:8px;">qualidade vs prompting puro</div>
+        </div>
+        <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:40px;">
+          <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">vs GPT-4o sem schema</div>
+          <div class="tab" style="font-size:120px; line-height:1; font-weight:600; letter-spacing:-.04em; margin-top:12px; color:var(--navy);">
+            +17,2<span style="font-size:60px; vertical-align:18px; color:var(--teal);">%</span>
+          </div>
+          <div style="font-size:18px; color:var(--muted); margin-top:8px;">vLLM-structure, 29 features estruturadas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refs">arXiv:2409.18319 — vLLM-structure: structured decoding em laudos. · OpenAI Structured Outputs (response_format: json_schema). · Outlines, Guidance, LMQL — bibliotecas open-source de constrained generation.</div>
+    <div class="footer">
+      <span>08 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 9 — DOMAIN-SPECIFIC EVIDENCE ============== -->
+<section data-screen-label="09 Evidência domain-specific">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Peça 3 da stack</div>
+        <h2 class="deck">A evidência peer-reviewed mais nova</h2>
+        <div style="margin-top:14px; font-size:22px; color:var(--muted);">
+          <strong style="color:var(--navy);">Rad AI / Moffitt</strong> · <em style="font-family:'Source Serif 4',serif;">npj Digital Medicine</em> 2026
+          <span style="margin-left:12px; padding:4px 10px; background:var(--soft); border-radius:4px; font-size:14px; font-family:'JetBrains Mono',monospace;">200 laudos · TC oncológica · multi-stakeholder · cego</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;">
+      <table class="t">
+        <thead>
+          <tr>
+            <th style="width:36%;">Modelo</th>
+            <th>Concisão</th>
+            <th>Preferência clínica</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="font-weight:600; font-size:22px; color:var(--navy);">Domain-specific</div>
+              <div style="font-size:16px; color:var(--muted); margin-top:2px;">Rad AI custom — fine-tuned em corpus Moffitt</div>
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:var(--teal);"><path d="M20 6 9 17l-5-5"/></svg>
+                <span style="font-weight:600; color:var(--navy); font-size:20px;">paridade humana</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:var(--teal);"><path d="M20 6 9 17l-5-5"/></svg>
+                <span style="font-weight:600; color:var(--navy); font-size:20px;">não inferior em preferência</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-weight:600; font-size:22px; color:var(--navy);">LLM geral state-of-the-art</div>
+              <div style="font-size:16px; color:var(--muted); margin-top:2px;">GPT-4-class · sem fine-tuning radiológico</div>
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:#B85C5C;"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                <span class="tab" style="font-weight:600; color:var(--navy); font-size:20px;">75 ± 20 palavras</span>
+                <span style="font-size:15px; color:var(--muted);">verbosity bias</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <svg class="ic" viewBox="0 0 24 24" style="font-size:22px; color:#B85C5C;"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                <span class="tab" style="font-weight:600; color:var(--navy); font-size:20px;">Cohen's h 1,04–1,22</span>
+                <span style="font-size:15px; color:var(--muted);">efeito muito grande</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:auto; padding-top:48px; background:var(--navy); color:#fff; border-radius:14px; padding:48px 56px; display:flex; gap:40px; align-items:center;">
+      <div style="font-family:'Source Serif 4',serif; font-size:120px; line-height:.8; color:var(--teal); font-weight:600;">“</div>
+      <div style="flex:1;">
+        <div style="font-family:'Source Serif 4',serif; font-style:italic; font-size:38px; line-height:1.25; font-weight:400;">
+          Carle Health: <strong class="tab" style="font-style:normal; color:var(--teal);">90–95%</strong> das impressões geradas <strong style="font-style:normal;">não exigem edição</strong>.
+        </div>
+        <div style="margin-top:16px; font-size:18px; opacity:.7; letter-spacing:.04em;">— Dr. Juan Jimenez · Carle Health · case study Rad AI</div>
+      </div>
+    </div>
+
+    <div class="refs">Rad AI / Moffitt — npj Digital Medicine 2026 (doi:10.1038/s41746-026-02586-6). · PR Newswire 2025. · Carle Health case study (radai.com).</div>
+    <div class="footer">
+      <span>09 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 10 — METRICS ============== -->
+<section data-screen-label="10 Métricas">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Avaliação</div>
+        <h2 class="deck">Métricas que importam</h2>
+        <div style="margin-top:8px; font-size:22px; color:var(--muted); font-style:italic;">esqueça BLEU/ROUGE puros</div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;">
+      <table class="t">
+        <thead>
+          <tr>
+            <th style="width:60px;"></th>
+            <th style="width:280px;">Métrica</th>
+            <th>O que mede</th>
+            <th style="width:420px;">Por que usar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--teal);"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+            </td>
+            <td><div style="font-size:24px; font-weight:600; color:var(--navy);">GREEN</div><div style="font-size:14px; color:var(--muted);">Stanford-AIMI · open-source</div></td>
+            <td>Erros clinicamente significativos · score 0–1</td>
+            <td>Correlaciona com preferência de especialista</td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--teal);"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 8h8v8H8z"/></svg>
+            </td>
+            <td><div style="font-size:24px; font-weight:600; color:var(--navy);">RadFact</div><div style="font-size:14px; color:var(--muted);">Microsoft Research · MAIRA-2</div></td>
+            <td>Factualidade sentença-a-sentença + bounding box</td>
+            <td>Localização espacial correta, não só palavras</td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--teal);"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M8 7l4 9M16 7l-4 9"/></svg>
+            </td>
+            <td><div style="font-size:24px; font-weight:600; color:var(--navy);">F1-RadGraph</div><div style="font-size:14px; color:var(--muted);">tripletas entidade-relação</div></td>
+            <td>Estrutura factual, não sobreposição lexical</td>
+            <td>Granularidade clínica fina</td>
+          </tr>
+          <tr>
+            <td>
+              <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--teal);"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            </td>
+            <td><div style="font-size:24px; font-weight:600; color:var(--navy);">Human eval</div><div style="font-size:14px; color:var(--muted);">≥3 avaliadores cegos · Likert</div></td>
+            <td>Completude · correção · concisão · clareza · utilidade · dano</td>
+            <td>Obrigatória — nenhuma métrica automática substitui</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:auto; padding-top:48px;">
+      <div style="background:var(--navy); color:#fff; border-radius:12px; padding:24px 36px; display:flex; align-items:center; gap:24px;">
+        <svg class="ic" viewBox="0 0 24 24" style="font-size:30px; color:var(--teal); flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+        <div style="font-size:22px; line-height:1.4;">
+          <strong>Reporte conforme TRIPOD-LLM</strong> — <span style="opacity:.75;">Gallifant et al., <em style="font-family:'Source Serif 4',serif;">Nat Med</em> 2025;31(1):60–69. Living guideline · 19 itens · 50 subitens.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="refs">arXiv:2405.03595 — GREEN. · arXiv:2406.04449 — RadFact / MAIRA-2 (Microsoft). · Jain et al. 2021 — F1-RadGraph. · Nat Med 2025;31(1):60–69 — TRIPOD-LLM.</div>
+    <div class="footer">
+      <span>10 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 11 — RISKS ============== -->
+<section data-screen-label="11 Riscos">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow amber">Riscos</div>
+        <h2 class="deck">A “edição mínima” não é zero</h2>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:24px; flex:1;">
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid var(--amber); border-radius:10px; padding:32px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--amber);"><path d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Risco 01</div>
+        </div>
+        <div style="font-size:30px; font-weight:600; color:var(--navy);">Alucinação</div>
+        <div class="tab" style="font-size:32px; font-weight:600; color:var(--navy); margin-top:18px; letter-spacing:-.01em;">
+          1,5% <span style="color:var(--muted); font-weight:400;">→</span> 6% <span style="color:var(--muted); font-weight:400;">→</span> 15%
+        </div>
+        <div style="font-size:17px; color:var(--muted); margin-top:10px; line-height:1.45;">
+          sumarização → laudos completos → VLM com input visual
+        </div>
+      </div>
+
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid var(--amber); border-radius:10px; padding:32px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--amber);"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Risco 02</div>
+        </div>
+        <div style="font-size:30px; font-weight:600; color:var(--navy);">Drift silencioso</div>
+        <div class="tab" style="font-size:32px; font-weight:600; color:var(--navy); margin-top:18px; letter-spacing:-.01em;">
+          GPT-3.5: 38% <span style="color:var(--muted); font-weight:400;">→</span> 26%
+        </div>
+        <div style="font-size:17px; color:var(--muted); margin-top:10px; line-height:1.45;">
+          2024 → 2025 em Diagnosis Please · sem release notes
+        </div>
+      </div>
+
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid var(--amber); border-radius:10px; padding:32px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--amber);"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Risco 03</div>
+        </div>
+        <div style="font-size:30px; font-weight:600; color:var(--navy);">Texto &gt; imagem (hoje)</div>
+        <div class="tab" style="font-size:32px; font-weight:600; color:var(--navy); margin-top:18px; letter-spacing:-.01em;">
+          OR 0,29 visual vs textual
+        </div>
+        <div style="font-size:17px; color:var(--muted); margin-top:10px; line-height:1.45;">
+          Frontiers Radiology 2025 · meta-análise n=8.852 casos
+        </div>
+      </div>
+
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid var(--amber); border-radius:10px; padding:32px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+          <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--amber);"><path d="M21 12c0 5-9 9-9 9s-9-4-9-9V5l9-3 9 3z"/><path d="M9 12h6M12 9v6"/></svg>
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Risco 04</div>
+        </div>
+        <div style="font-size:30px; font-weight:600; color:var(--navy);">LLM-as-a-judge</div>
+        <div style="font-size:22px; font-weight:600; color:var(--navy); margin-top:18px; line-height:1.3;">
+          self-preference · verbosity · position
+        </div>
+        <div style="font-size:17px; color:var(--muted); margin-top:10px; line-height:1.45;">
+          vieses sistemáticos — exige calibração
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; background:var(--navy); color:#fff; border-radius:12px; padding:24px 36px; display:flex; align-items:center; gap:18px;">
+      <svg class="ic" viewBox="0 0 24 24" style="font-size:28px; color:var(--teal); flex-shrink:0;"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg>
+      <div style="font-size:22px;">O médico continua responsável — <strong>CFM 2.454/2026, art. 4º-I</strong>.</div>
+    </div>
+
+    <div class="refs">Asgari E et al., npj Digit Med 2025 (doi:10.1038/s41746-025-01670-7). · Hand 2024, PMC11574816. · Bhayana, Radiology 2024;310:e232411. · Frontiers Radiology 2025 — meta-análise. · arXiv:2410.21819, 2410.02736, 2406.07791 (LLM-as-judge biases).</div>
+    <div class="footer">
+      <span>11 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 12 — CFM 2.454 ============== -->
+<section data-screen-label="12 CFM 2.454/2026">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Régua brasileira</div>
+        <h2 class="deck">CFM nº 2.454/2026</h2>
+        <div style="margin-top:10px; font-size:18px; color:var(--muted); font-family:'JetBrains Mono',monospace;">
+          DOU 27/02/2026 · retificada 05/03/2026 · vacatio legis 180 dias
+        </div>
+      </div>
+      <div style="background:var(--amber); color:#3a2700; border-radius:14px; padding:24px 32px; text-align:center; min-width:280px;">
+        <div style="font-size:13px; letter-spacing:.18em; text-transform:uppercase; font-weight:700;">Vigência</div>
+        <div style="font-size:48px; line-height:1; font-weight:700; margin-top:6px; letter-spacing:-.02em;">Agosto</div>
+        <div class="tab" style="font-size:18px; font-weight:600; margin-top:4px;">2026</div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; display:grid; grid-template-columns:1.1fr 1fr; gap:48px; flex:1;">
+      <!-- scroll/document -->
+      <div>
+        <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:18px;">Deveres do médico — art. 4º</div>
+        <div style="background:var(--paper); border:1px solid var(--rule); border-radius:14px; padding:36px; position:relative;">
+          <div style="position:absolute; top:0; left:0; right:0; height:6px; background:var(--navy); border-radius:14px 14px 0 0;"></div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <div style="display:flex; gap:18px;">
+              <div class="num" style="background:var(--soft); color:var(--navy); border:1px solid var(--rule); width:44px; height:44px; font-family:'Source Serif 4',serif;">1</div>
+              <div style="flex:1; padding-top:6px;">
+                <div style="font-size:22px; color:var(--navy); font-weight:500;">IA é apoio. <strong>Médico responsável final.</strong></div>
+              </div>
+            </div>
+            <div style="height:1px; background:var(--rule);"></div>
+            <div style="display:flex; gap:18px;">
+              <div class="num" style="background:var(--soft); color:var(--navy); border:1px solid var(--rule); width:44px; height:44px; font-family:'Source Serif 4',serif;">2</div>
+              <div style="flex:1; padding-top:6px;">
+                <div style="font-size:22px; color:var(--navy); font-weight:500;">Julgamento crítico — não delegar a decisão.</div>
+              </div>
+            </div>
+            <div style="height:1px; background:var(--rule);"></div>
+            <div style="display:flex; gap:18px;">
+              <div class="num" style="background:var(--soft); color:var(--navy); border:1px solid var(--rule); width:44px; height:44px; font-family:'Source Serif 4',serif;">3</div>
+              <div style="flex:1; padding-top:6px;">
+                <div style="font-size:22px; color:var(--navy); font-weight:500;">Conhecer limitações e vieses do sistema usado.</div>
+              </div>
+            </div>
+            <div style="height:1px; background:var(--rule);"></div>
+            <div style="display:flex; gap:18px;">
+              <div class="num" style="background:var(--soft); color:var(--navy); border:1px solid var(--rule); width:44px; height:44px; font-family:'Source Serif 4',serif;">4</div>
+              <div style="flex:1; padding-top:6px;">
+                <div style="font-size:22px; color:var(--navy); font-weight:500;">Usar somente sistemas conformes (regulação + governança).</div>
+              </div>
+            </div>
+            <div style="height:1px; background:var(--rule);"></div>
+            <div style="display:flex; gap:18px;">
+              <div class="num" style="background:var(--teal); color:#fff; width:44px; height:44px; font-family:'Source Serif 4',serif;">5</div>
+              <div style="flex:1; padding-top:6px;">
+                <div style="font-size:22px; color:var(--navy); font-weight:500;"><strong>Registrar o uso da IA no prontuário.</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- highlights -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:28px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:24px; color:var(--teal);"><path d="M3 21h18M5 21V7l8-4 8 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h6"/></svg>
+            <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Governança institucional</div>
+          </div>
+          <div style="font-size:22px; color:var(--navy); line-height:1.35; font-weight:500;">
+            Comissão de IA e Telemedicina + classificação de risco + governança formal
+          </div>
+        </div>
+
+        <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid var(--amber); border-radius:8px; padding:28px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+            <svg class="ic" viewBox="0 0 24 24" style="font-size:24px; color:var(--amber);"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
+            <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Proibição expressa</div>
+          </div>
+          <div style="font-size:22px; color:var(--navy); line-height:1.35; font-weight:500;">
+            Proibido delegar à IA a comunicação de diagnóstico ou prognóstico ao paciente.
+          </div>
+        </div>
+
+        <div style="background:var(--navy); color:#fff; border-radius:12px; padding:28px; flex:1; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--teal); font-weight:600; margin-bottom:12px;">Três passos até agosto</div>
+          <div style="display:flex; gap:24px;">
+            <div style="flex:1;">
+              <div style="font-size:15px; opacity:.6; font-family:'JetBrains Mono',monospace;">01</div>
+              <div style="font-size:20px; font-weight:600;">Inventário</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:15px; opacity:.6; font-family:'JetBrains Mono',monospace;">02</div>
+              <div style="font-size:20px; font-weight:600;">Governança</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:15px; opacity:.6; font-family:'JetBrains Mono',monospace;">03</div>
+              <div style="font-size:20px; font-weight:600;">Prontuário</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refs">Resolução CFM nº 2.454/2026 (sistemas.cfm.org.br/normas/arquivos/resolucoes/BR/2026/2454_2026.pdf). · Análises Mattos Filho 03/2026; Magis 03/2026; VGV Advogados 02/2026.</div>
+    <div class="footer">
+      <span>12 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 13 — REGULATORY STACK ============== -->
+<section data-screen-label="13 Pilha regulatória">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Stack legal</div>
+        <h2 class="deck">A pilha regulatória completa</h2>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px; align-self:flex-start; padding-top:18px;">
+        <!-- minimalist BR flag accent -->
+        <svg width="56" height="38" viewBox="0 0 56 38">
+          <rect width="56" height="38" rx="3" fill="#0A6E3F"/>
+          <path d="M28 6 L52 19 L28 32 L4 19 Z" fill="#F4A300"/>
+          <circle cx="28" cy="19" r="7" fill="#0A2342"/>
+        </svg>
+        <div style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-weight:600;">Brasil · abril/2026</div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px;">
+      <table class="t">
+        <thead>
+          <tr>
+            <th style="width:30%;">Instrumento</th>
+            <th>O que exige</th>
+            <th style="width:280px;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="font-weight:600; font-size:22px; color:var(--navy);">LGPD</div>
+              <div style="font-size:14px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px;">Lei 13.709/2018 · art. 11</div>
+            </td>
+            <td>Dado de saúde = sensível. Multa até <strong>2% do faturamento / R$ 50M</strong>.</td>
+            <td><span class="chip" style="color:var(--teal); border-color:rgba(0,168,181,.3);">● Em vigor</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-weight:600; font-size:22px; color:var(--navy);">ANPD Res. 19/2024</div>
+              <div style="font-size:14px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px;">Transferência internacional</div>
+            </td>
+            <td>Cláusulas-padrão para envio de dados ao exterior (SCC).</td>
+            <td><span class="chip" style="color:var(--teal); border-color:rgba(0,168,181,.3);">● Vigência integral 23/08/2025</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-weight:600; font-size:22px; color:var(--navy);">PL 2.338/2023</div>
+              <div style="font-size:14px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px;">Marco Legal da IA</div>
+            </td>
+            <td>Risco-based · ANPD = SIA · multas alinhadas à LGPD.</td>
+            <td><span class="chip" style="color:var(--amber); border-color:rgba(244,163,0,.4);">◐ Senado 12/2024 · Câmara</span></td>
+          </tr>
+          <tr>
+            <td>
+              <div style="font-weight:600; font-size:22px; color:var(--navy);">ISO/IEC 42001:2023</div>
+              <div style="font-size:14px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px;">AI Management System</div>
+            </td>
+            <td>Estrutura Plan-Do-Check-Act para governança de IA.</td>
+            <td><span class="chip" style="color:var(--muted);">○ Voluntária · recomendada</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:auto; padding-top:48px; display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid #B85C5C; border-radius:8px; padding:24px 28px; display:flex; align-items:center; gap:18px;">
+        <svg class="ic" viewBox="0 0 24 24" style="font-size:32px; color:#B85C5C; flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
+        <div>
+          <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Vedado</div>
+          <div style="font-size:22px; font-weight:600; color:var(--navy); margin-top:4px;">ChatGPT consumer (Free / Plus / Business) com PHI</div>
+        </div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-left:4px solid var(--teal); border-radius:8px; padding:24px 28px; display:flex; align-items:center; gap:18px;">
+        <svg class="ic" viewBox="0 0 24 24" style="font-size:32px; color:var(--teal); flex-shrink:0;"><path d="M20 6 9 17l-5-5"/></svg>
+        <div>
+          <div style="font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600;">Permitido</div>
+          <div style="font-size:22px; font-weight:600; color:var(--navy); margin-top:4px;">API + BAA (Azure / Bedrock / Vertex) <em style="font-style:normal; color:var(--muted); font-weight:400;">ou</em> on-prem</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refs">gov.br/anpd · Mayer Brown 08/2025 · Saud Advogados 08/2025 · Senado/Câmara — PL 2.338/2023 · ISO.org · OpenAI for Healthcare 2025.</div>
+    <div class="footer">
+      <span>13 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 14 — TAKE-HOME ============== -->
+<section data-screen-label="14 Take-home">
+  <div class="pad">
+    <div class="head">
+      <div class="left">
+        <div class="eyebrow">Síntese</div>
+        <h2 class="deck">O que levar para casa</h2>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; display:grid; grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr 1fr; gap:20px;">
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:28px;">
+        <div style="font-family:'Source Serif 4',serif; font-size:34px; color:var(--teal); font-weight:600; line-height:1;">01</div>
+        <div style="margin-top:14px; font-size:22px; color:var(--navy); font-weight:600; line-height:1.3;">Edição mínima ≠ edição zero</div>
+        <div style="margin-top:8px; font-size:16px; color:var(--muted); line-height:1.5;">o médico continua responsável.</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:28px;">
+        <div style="font-family:'Source Serif 4',serif; font-size:34px; color:var(--teal); font-weight:600; line-height:1;">02</div>
+        <div style="margin-top:14px; font-size:22px; color:var(--navy); font-weight:600; line-height:1.3;">Stack 3-em-1</div>
+        <div style="margin-top:8px; font-size:16px; color:var(--muted); line-height:1.5;">template + RAG + LLM domain-specific com saída restrita.</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:28px;">
+        <div style="font-family:'Source Serif 4',serif; font-size:34px; color:var(--teal); font-weight:600; line-height:1;">03</div>
+        <div style="margin-top:14px; font-size:22px; color:var(--navy); font-weight:600; line-height:1.3;">CFM 2.454/2026 em agosto</div>
+        <div style="margin-top:8px; font-size:16px; color:var(--muted); line-height:1.5;">inventário, governança, prontuário — comecem hoje.</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:28px;">
+        <div style="font-family:'Source Serif 4',serif; font-size:34px; color:var(--teal); font-weight:600; line-height:1;">04</div>
+        <div style="margin-top:14px; font-size:22px; color:var(--navy); font-weight:600; line-height:1.3;">Sem BAA + sem SCC = infração</div>
+        <div style="margin-top:8px; font-size:16px; color:var(--muted); line-height:1.5;">ChatGPT consumer com paciente está fora.</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:28px;">
+        <div style="font-family:'Source Serif 4',serif; font-size:34px; color:var(--teal); font-weight:600; line-height:1;">05</div>
+        <div style="margin-top:14px; font-size:22px; color:var(--navy); font-weight:600; line-height:1.3;">Métricas certas</div>
+        <div style="margin-top:8px; font-size:16px; color:var(--muted); line-height:1.5;">GREEN, RadFact, F1-RadGraph + humano. TRIPOD-LLM.</div>
+      </div>
+      <div style="background:var(--paper); border:1px solid var(--rule); border-radius:12px; padding:28px;">
+        <div style="font-family:'Source Serif 4',serif; font-size:34px; color:var(--teal); font-weight:600; line-height:1;">06</div>
+        <div style="margin-top:14px; font-size:22px; color:var(--navy); font-weight:600; line-height:1.3;">Open-source on-prem é viável</div>
+        <div style="margin-top:8px; font-size:16px; color:var(--muted); line-height:1.5;">MedGemma 27B, Llama-3.3 70B em 1× H100.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:48px;">
+      <div data-voice-tech style="background:var(--navy); color:var(--bg); border-radius:14px; padding:48px 56px; display:flex; gap:32px; align-items:center;">
+        <div style="font-family:var(--serif-font); font-size:140px; line-height:.7; color:var(--teal); font-weight:600;">“</div>
+        <div style="font-family:var(--serif-font); font-style:italic; font-size:38px; line-height:1.25; font-weight:400;">
+          Você não vai ser substituído por IA.<br/>
+          Vai ser substituído pelo radiologista que sabe usar IA <strong style="font-style:normal;">com governança</strong>.
+        </div>
+      </div>
+      <div data-voice-conv style="background:var(--navy); color:var(--bg); border-radius:14px; padding:48px 56px; display:flex; gap:32px; align-items:center;">
+        <div style="font-family:var(--serif-font); font-size:140px; line-height:.7; color:var(--teal); font-weight:600;">“</div>
+        <div style="font-family:var(--serif-font); font-style:italic; font-size:38px; line-height:1.25; font-weight:400;">
+          Relaxa — IA não vai te tirar do mercado.<br/>
+          Quem vai é o colega que aprendeu a usar IA <strong style="font-style:normal;">direito</strong>.
+        </div>
+      </div>
+    </div>
+
+    <div class="refs">Síntese dos slides 03–13. Adaptado livremente de Curtis Langlotz (Stanford), com ênfase brasileira na governança CFM 2.454/2026.</div>
+    <div class="footer">
+      <span>14 / 15</span>
+      <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 15 — THANK YOU ============== -->
+<section data-screen-label="15 Obrigado" class="dark-slide" style="background:var(--shell); color:var(--bg);">
+  <div class="cover-grid"></div>
+
+  <div style="position:absolute; left:120px; top:120px; display:flex; align-items:center; gap:18px;">
+    <div style="width:36px; height:1px; background:#00A8B5;"></div>
+    <span style="font-size:13px; letter-spacing:.22em; text-transform:uppercase; color:#00A8B5; font-weight:600;">JPR 2026 · Encerramento</span>
+  </div>
+
+  <div style="position:absolute; left:120px; top:240px; max-width:1100px;">
+    <h1 class="deck" style="color:#F5F7FA; font-size:140px;">Obrigado.</h1>
+    <div style="margin-top:36px; height:1px; width:120px; background:#00A8B5;"></div>
+    <div style="margin-top:36px;">
+      <div style="font-size:30px; font-weight:600; color:#F5F7FA;">Dr. Gustavo Cesar de Antonio Corradi</div>
+      <div style="margin-top:14px; font-size:20px; opacity:.65; font-family:'JetBrains Mono',monospace; line-height:1.7;">
+        ✉  gustavocorradi@gmail.com<br/>
+        ↳  linkedin.com/in/gustavo-corradi
+      </div>
+    </div>
+    <div style="margin-top:64px; font-family:'Source Serif 4',serif; font-style:italic; font-size:48px; color:#F4A300; font-weight:400;">Perguntas?</div>
+  </div>
+
+  <!-- QR codes -->
+  <div style="position:absolute; right:120px; top:50%; transform:translateY(-50%); display:flex; gap:48px;">
+    <div style="text-align:center;">
+      <div style="width:280px; height:280px; background:#F5F7FA; border-radius:14px; padding:20px; box-sizing:border-box; display:flex; align-items:center; justify-content:center;">
+        <div id="qr-dossie"></div>
+      </div>
+      <div style="margin-top:18px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:#00A8B5; font-weight:600;">QR · Esquerda</div>
+      <div style="margin-top:6px; font-size:18px; font-weight:600; color:#F5F7FA;">Dossiê de referências</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:280px; height:280px; background:#F5F7FA; border-radius:14px; padding:20px; box-sizing:border-box; display:flex; align-items:center; justify-content:center;">
+        <div id="qr-bot"></div>
+      </div>
+      <div style="margin-top:18px; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:#00A8B5; font-weight:600;">QR · Direita</div>
+      <div style="margin-top:6px; font-size:18px; font-weight:600; color:#F5F7FA;">Demo do bot</div>
+    </div>
+  </div>
+
+  <div style="position:absolute; left:120px; bottom:120px; right:120px; padding-top:24px; border-top:1px solid rgba(245,247,250,.15); display:flex; justify-content:space-between; font-size:14px; color:#F5F7FA; opacity:.55;">
+    <span>JPR 2026 · Sessão "Otimização de Laudos com IA: Além do Básico"</span>
+    <span>Moderador: Gilberto Szarf</span>
+  </div>
+
+  <div class="footer" style="color:#F5F7FA; opacity:.45;">
+    <span>15 / 15</span>
+    <span><span class="dot"></span>JPR 2026<span class="dot"></span>G. Corradi<span class="dot"></span>Laudo Assistido por LLM</span>
+  </div>
+</section>
+
+</deck-stage>
+
+<div id="tweaks-root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "mood": "clinical",
+  "density": "standard",
+  "voice": "tech",
+  "accent": "#00A8B5"
+}/*EDITMODE-END*/;
+
+function TweaksApp(){
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  React.useEffect(() => {
+    const stage = document.querySelector('deck-stage');
+    if (!stage) return;
+    stage.setAttribute('data-mood', t.mood);
+    stage.setAttribute('data-density', t.density);
+    stage.setAttribute('data-voice', t.voice);
+    // accent override — only applies to clinical (other moods own their accent)
+    if (t.mood === 'clinical') {
+      stage.style.setProperty('--teal', t.accent);
+    } else {
+      stage.style.removeProperty('--teal');
+    }
+  }, [t.mood, t.density, t.voice, t.accent]);
+
+  return (
+    <TweaksPanel title="Deck tweaks">
+      <TweakSection label="Mood" />
+      <TweakRadio
+        label="Palette & feel"
+        value={t.mood}
+        options={['clinical','editorial','nocturne']}
+        onChange={(v) => setTweak('mood', v)} />
+
+      <TweakSection label="Density" />
+      <TweakRadio
+        label="Rhythm"
+        value={t.density}
+        options={['spacious','standard','dense']}
+        onChange={(v) => setTweak('density', v)} />
+
+      <TweakSection label="Voice" />
+      <TweakRadio
+        label="Copy register"
+        value={t.voice}
+        options={['tech','conv']}
+        onChange={(v) => setTweak('voice', v)} />
+
+      <TweakSection label="Accent" />
+      <TweakColor
+        label="Highlight (clinical only)"
+        value={t.accent}
+        onChange={(v) => setTweak('accent', v)} />
+    </TweaksPanel>
+  );
+}
+
+// initialize attrs from defaults at first paint (before React mounts)
+(function(){
+  const stage = document.querySelector('deck-stage');
+  if (!stage) return;
+  stage.setAttribute('data-mood', TWEAK_DEFAULTS.mood);
+  stage.setAttribute('data-density', TWEAK_DEFAULTS.density);
+  stage.setAttribute('data-voice', TWEAK_DEFAULTS.voice);
+})();
+
+ReactDOM.createRoot(document.getElementById('tweaks-root')).render(<TweaksApp/>);
+</script>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  new QRCode(document.getElementById('qr-dossie'), {
+    text: 'https://gustavocac.github.io/jpr-2026/project/deck.html',
+    width: 240, height: 240,
+    colorDark: '#0A2342', colorLight: '#F5F7FA',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+  new QRCode(document.getElementById('qr-bot'), {
+    text: 'https://t.me/co_rradi_bot',
+    width: 240, height: 240,
+    colorDark: '#0A2342', colorLight: '#F5F7FA',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+});
+</script>
+</body>
+</html>
