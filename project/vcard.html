@@ -20,6 +20,8 @@
     --shadow: 0 4px 24px rgba(10,35,66,.10);
   }
 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     font-family: 'Inter', system-ui, sans-serif;
     background: var(--bg);
@@ -31,207 +33,147 @@
     padding: 48px 16px 80px;
   }
 
-  /* ── Header ── */
-  header {
-    text-align: center;
-    margin-bottom: 40px;
-  }
+  header { text-align: center; margin-bottom: 40px; }
   header .eyebrow {
-    font-size: 11px;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-    color: var(--teal);
-    font-weight: 600;
-    margin-bottom: 10px;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--teal); font-weight: 600; margin-bottom: 10px;
   }
-  header h1 {
-    font-size: clamp(22px, 4vw, 32px);
-    font-weight: 700;
-    color: var(--navy);
-    line-height: 1.2;
-  }
-  header p {
-    margin-top: 10px;
-    font-size: 15px;
-    color: var(--muted);
-    max-width: 460px;
-  }
+  header h1 { font-size: clamp(22px, 4vw, 32px); font-weight: 700; line-height: 1.2; }
+  header p  { margin-top: 10px; font-size: 15px; color: var(--muted); max-width: 480px; }
 
-  /* ── Card ── */
   .card {
     background: var(--paper);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 36px 40px;
-    width: 100%;
-    max-width: 760px;
+    width: 100%; max-width: 780px;
+  }
+  @media (max-width: 560px) { .card { padding: 24px 20px; } }
+
+  /* ── Section label ── */
+  .section-label {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 12px;
+    padding-top: 8px; margin-top: 4px;
+  }
+  .section-label span {
+    font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+    font-weight: 700; color: var(--teal); white-space: nowrap;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--rule);
   }
 
-  /* ── Form ── */
+  /* ── Form grid ── */
   .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 18px 24px;
+    gap: 16px 24px;
   }
-  @media (max-width: 560px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .card { padding: 24px 20px; }
-  }
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
   .field.full { grid-column: 1 / -1; }
+
   label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--muted);
+    font-size: 11px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted);
   }
+
+  /* ── Input base ── */
   input {
-    height: 44px;
-    padding: 0 14px;
-    border: 1.5px solid var(--rule);
-    border-radius: 8px;
-    font-size: 15px;
-    color: var(--navy);
-    background: var(--bg);
-    outline: none;
-    transition: border-color .15s, box-shadow .15s;
+    height: 44px; padding: 0 12px 0 40px;
+    border: 1.5px solid var(--rule); border-radius: 8px;
+    font-size: 15px; color: var(--navy); background: var(--bg);
+    outline: none; transition: border-color .15s, box-shadow .15s;
     font-family: inherit;
   }
+  input.no-icon { padding-left: 14px; }
   input:focus {
     border-color: var(--teal);
     box-shadow: 0 0 0 3px rgba(0,168,181,.15);
     background: var(--paper);
   }
-  input::placeholder { color: var(--rule); }
+  input::placeholder { color: #C5CDD8; }
+
+  /* ── Input wrapper (for icon) ── */
+  .input-wrap { position: relative; }
+  .input-wrap svg {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    pointer-events: none; color: var(--muted); opacity: .55;
+  }
 
   /* ── Notice ── */
   .notice {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    background: rgba(244,163,0,.08);
-    border: 1.5px solid rgba(244,163,0,.30);
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-top: 22px;
-    font-size: 13px;
-    color: #7a5200;
-    line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(244,163,0,.08); border: 1.5px solid rgba(244,163,0,.30);
+    border-radius: 8px; padding: 12px 16px; margin-top: 22px;
+    font-size: 13px; color: #7a5200; line-height: 1.5;
   }
-  .notice svg { flex-shrink: 0; margin-top: 1px; }
+  .notice svg { flex-shrink: 0; margin-top: 2px; }
 
   /* ── Generate button ── */
   .btn-generate {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    margin-top: 24px;
-    height: 52px;
-    background: var(--navy);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; margin-top: 24px; height: 52px;
+    background: var(--navy); color: #fff; border: none;
+    border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background .15s, transform .1s;
     font-family: inherit;
   }
   .btn-generate:hover  { background: #143258; }
   .btn-generate:active { transform: scale(.98); }
 
   /* ── Divider ── */
-  .divider {
-    height: 1px;
-    background: var(--rule);
-    margin: 36px 0;
-  }
+  .divider { height: 1px; background: var(--rule); margin: 36px 0; }
 
   /* ── QR output ── */
   #qr-section { display: none; }
   #qr-section.visible { display: block; }
 
   .qr-layout {
-    display: flex;
-    gap: 40px;
-    align-items: flex-start;
+    display: flex; gap: 40px; align-items: flex-start;
   }
-  @media (max-width: 560px) {
-    .qr-layout { flex-direction: column; align-items: center; }
-  }
+  @media (max-width: 580px) { .qr-layout { flex-direction: column; align-items: center; } }
 
   #qr-box {
-    flex-shrink: 0;
-    width: 240px;
-    height: 240px;
-    background: #ffffff;
-    border: 2px solid var(--rule);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
+    flex-shrink: 0; width: 240px; height: 240px;
+    background: #ffffff; border: 2px solid var(--rule);
+    border-radius: 14px; display: flex; align-items: center;
+    justify-content: center; padding: 16px;
   }
-  #qr-box canvas, #qr-box img {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-  }
+  #qr-box canvas, #qr-box img { display: block; max-width: 100%; max-height: 100%; }
 
-  .qr-meta { flex: 1; }
-  .qr-meta h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-bottom: 8px;
-  }
-  .qr-meta .vcard-preview {
+  .qr-meta { flex: 1; min-width: 0; }
+  .qr-meta h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .vcard-preview {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    line-height: 1.8;
-    color: var(--muted);
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 14px 16px;
-    margin-bottom: 18px;
-    word-break: break-all;
-    white-space: pre-wrap;
-    border: 1px solid var(--rule);
+    font-size: 11.5px; line-height: 1.75; color: var(--muted);
+    background: var(--bg); border-radius: 8px; padding: 14px 16px;
+    margin-bottom: 18px; white-space: pre-wrap; word-break: break-all;
+    border: 1px solid var(--rule); max-height: 260px; overflow-y: auto;
   }
-  .btn-download {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 24px;
-    height: 46px;
-    background: var(--teal);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .15s;
-    font-family: inherit;
-  }
-  .btn-download:hover { background: #008a95; }
 
-  /* ── Footer ── */
+  .qr-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-dl {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 0 22px; height: 46px; background: var(--teal); color: #fff;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .15s; font-family: inherit;
+  }
+  .btn-dl:hover { background: #008a95; }
+  .btn-dl.secondary {
+    background: transparent; color: var(--navy);
+    border: 1.5px solid var(--rule);
+  }
+  .btn-dl.secondary:hover { background: var(--bg); }
+
   footer {
-    margin-top: 48px;
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-    opacity: .7;
+    margin-top: 48px; text-align: center;
+    font-size: 12px; color: var(--muted); opacity: .7;
   }
   footer a { color: var(--teal); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -239,81 +181,165 @@
 <header>
   <div class="eyebrow">JPR 2026 · Laudo Assistido por LLM</div>
   <h1>Gerador de QR Code vCard</h1>
-  <p>Preencha os dados do contato e gere um QR Code que abre diretamente na agenda do celular.</p>
+  <p>Preencha os dados e gere um QR Code que abre diretamente na agenda do celular — sem servidor, sem API externa.</p>
 </header>
 
 <div class="card">
-
-  <!-- Formulário -->
   <form id="vcf-form" autocomplete="off">
     <div class="form-grid">
-      <div class="field">
-        <label for="f-firstname">Nome</label>
-        <input id="f-firstname" type="text" placeholder="Gustavo" value="Gustavo Cesar de Antonio" />
-      </div>
-      <div class="field">
-        <label for="f-lastname">Sobrenome</label>
-        <input id="f-lastname" type="text" placeholder="Corradi" value="Corradi" />
-      </div>
+
+      <!-- ── Identidade ── -->
+      <div class="section-label full"><span>Identidade</span></div>
+
       <div class="field">
         <label for="f-prefix">Prefixo / Título</label>
-        <input id="f-prefix" type="text" placeholder="Dr." value="Dr." />
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 12c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="f-prefix" type="text" placeholder="Dr." value="Dr." />
+        </div>
       </div>
+
       <div class="field">
         <label for="f-title">Cargo</label>
-        <input id="f-title" type="text" placeholder="Radiologista" value="Radiologista" />
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 4V3a2 2 0 014 0v1" stroke="currentColor" stroke-width="1.4"/></svg>
+          <input id="f-title" type="text" placeholder="Radiologista" value="Radiologista" />
+        </div>
       </div>
+
+      <div class="field">
+        <label for="f-firstname">Nome</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 12c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="f-firstname" type="text" placeholder="Gustavo" value="Gustavo Cesar de Antonio" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-lastname">Sobrenome</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 12c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="f-lastname" type="text" placeholder="Corradi" value="Corradi" />
+        </div>
+      </div>
+
       <div class="field full">
         <label for="f-org">Empresa / Instituição</label>
-        <input id="f-org" type="text" placeholder="Hospital / Clínica" value="" />
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="5" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M4 5V3.5A1.5 1.5 0 015.5 2h3A1.5 1.5 0 0110 3.5V5" stroke="currentColor" stroke-width="1.4"/></svg>
+          <input id="f-org" type="text" placeholder="Hospital / Clínica" value="Hospital Sírio Libanês" />
+        </div>
       </div>
+
+      <!-- ── Contato ── -->
+      <div class="section-label full"><span>Contato</span></div>
+
       <div class="field">
         <label for="f-phone">Celular</label>
-        <input id="f-phone" type="tel" placeholder="+55 11 99999-9999" value="" />
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="1" width="8" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="10.5" r=".75" fill="currentColor"/></svg>
+          <input id="f-phone" type="tel" placeholder="+55 11 99999-9999" value="+55 11 999400074" />
+        </div>
       </div>
+
       <div class="field">
         <label for="f-email">E-mail</label>
-        <input id="f-email" type="email" placeholder="email@exemplo.com" value="gustavocorradi@gmail.com" />
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 4l6 4 6-4" stroke="currentColor" stroke-width="1.4"/></svg>
+          <input id="f-email" type="email" placeholder="email@exemplo.com" value="gustavocorradi@gmail.com" />
+        </div>
       </div>
-      <div class="field full">
-        <label for="f-url">Website / LinkedIn</label>
-        <input id="f-url" type="url" placeholder="https://linkedin.com/in/..." value="https://linkedin.com/in/gustavo-corradi" />
+
+      <div class="field">
+        <label for="f-url">Website</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M1 7h12M7 1c-2 2-3 3.8-3 6s1 4 3 6M7 1c2 2 3 3.8 3 6s-1 4-3 6" stroke="currentColor" stroke-width="1.4"/></svg>
+          <input id="f-url" type="url" placeholder="https://seusite.com" value="http://corradi.app" />
+        </div>
       </div>
-    </div>
+
+      <div class="field">
+        <label for="f-linkedin">LinkedIn</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M4 6v4M4 4.5v.5M7 10V8a1 1 0 012 0v2M7 6v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="f-linkedin" type="url" placeholder="https://linkedin.com/in/..." value="https://linkedin.com/in/gustavo-corradi" />
+        </div>
+      </div>
+
+      <!-- ── Redes Sociais ── -->
+      <div class="section-label full"><span>Redes Sociais</span></div>
+
+      <div class="field">
+        <label for="f-instagram">Instagram</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="7" r="2.5" stroke="currentColor" stroke-width="1.4"/><circle cx="10.5" cy="3.5" r=".75" fill="currentColor"/></svg>
+          <input id="f-instagram" type="text" placeholder="@handle" value="@gustavocorradi" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-threads">Threads</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 6.5c-.5-2-2-3-3.5-2.5S4 6 5 7.5s3 2.5 3.5 1.5-1-3-3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="f-threads" type="text" placeholder="@handle" value="@gustavocorradi" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-twitter">Twitter / X</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <input id="f-twitter" type="text" placeholder="@handle" value="@gustavocorradi" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-telegram">Telegram</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 6.5l10-4.5-3.5 10-2-3.5-4.5 2 2.5-5.5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          <input id="f-telegram" type="text" placeholder="+55 11 ... ou @handle" value="+5511999400074" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-whatsapp">WhatsApp</label>
+        <div class="input-wrap">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 5.5c.5 3 4 4 4 4l1-2-2-1-.5 1c-1 0-2-1-2.5-2l1-.5L4.5 3l-2 1c0 .5.5 1.5.5 1.5z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+          <input id="f-whatsapp" type="text" placeholder="+55 11 99999-9999" value="+5511999400074" />
+        </div>
+      </div>
+
+    </div><!-- /form-grid -->
 
     <div class="notice">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7.25" stroke="#c87900" stroke-width="1.5"/>
-        <path d="M8 5v4M8 11v.5" stroke="#c87900" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <span><strong>Mantenha os dados curtos.</strong> Quanto mais texto, mais denso fica o QR Code — dificultando a leitura em tamanhos pequenos (ex.: cartão de visita ou slide). Prefira omitir campos opcionais quando não essenciais.</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.25" stroke="#c87900" stroke-width="1.5"/><path d="M8 5v4M8 11v.5" stroke="#c87900" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span><strong>QR mais denso com mais dados.</strong> Redes sociais aumentam bastante o tamanho do QR — pode dificultar leitura em slides ou cartões pequenos. Deixe em branco os campos opcionais que não forem essenciais.</span>
     </div>
 
     <button type="submit" class="btn-generate">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M1 1h6v6H1zM11 1h6v6h-6zM1 11h6v6H1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-        <path d="M11 11h2v2h-2zM13 13h2v2h-2zM11 15h2v2h-2zM15 11h2v2h-2z" fill="currentColor"/>
-      </svg>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M1 1h6v6H1zM11 1h6v6h-6zM1 11h6v6H1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M11 11h2v2h-2zM13 13h2v2h-2zM11 15h2v2h-2zM15 11h2v2h-2z" fill="currentColor"/></svg>
       Gerar QR Code
     </button>
   </form>
 
   <div class="divider"></div>
 
-  <!-- Output -->
   <div id="qr-section">
     <div class="qr-layout">
       <div id="qr-box"></div>
       <div class="qr-meta">
         <h2 id="qr-name"></h2>
         <pre id="vcard-preview" class="vcard-preview"></pre>
-        <button class="btn-download" id="btn-dl">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 1v9M4.5 7l3.5 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 13h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-          Baixar PNG (alta resolução)
-        </button>
+        <div class="qr-actions">
+          <button class="btn-dl" id="btn-dl-png">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M4.5 7l3.5 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            Baixar PNG (alta resolução)
+          </button>
+          <button class="btn-dl secondary" id="btn-dl-vcf">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 1h6l4 4v10H4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 1v4h4" stroke="currentColor" stroke-width="1.4"/><path d="M6 9l1.5 3L9 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Baixar .vcf
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -334,23 +360,36 @@
   var qrBox   = document.getElementById('qr-box');
   var preview = document.getElementById('vcard-preview');
   var nameEl  = document.getElementById('qr-name');
-  var dlBtn   = document.getElementById('btn-dl');
+  var btnPng  = document.getElementById('btn-dl-png');
+  var btnVcf  = document.getElementById('btn-dl-vcf');
 
-  var qrInstance = null;
-
+  /* ── helpers ── */
   function esc(s) {
     return (s || '').replace(/[\\,;]/g, function(c){ return '\\' + c; });
   }
+  function cleanHandle(s) {
+    return (s || '').trim().replace(/^@/, '');
+  }
+  function cleanPhone(s) {
+    return (s || '').trim().replace(/[\s\-().]/g, '');
+  }
 
+  /* ── vCard builder ── */
   function buildVCard() {
-    var first  = document.getElementById('f-firstname').value.trim();
-    var last   = document.getElementById('f-lastname').value.trim();
-    var prefix = document.getElementById('f-prefix').value.trim();
-    var title  = document.getElementById('f-title').value.trim();
-    var org    = document.getElementById('f-org').value.trim();
-    var phone  = document.getElementById('f-phone').value.trim();
-    var email  = document.getElementById('f-email').value.trim();
-    var url    = document.getElementById('f-url').value.trim();
+    var first    = document.getElementById('f-firstname').value.trim();
+    var last     = document.getElementById('f-lastname').value.trim();
+    var prefix   = document.getElementById('f-prefix').value.trim();
+    var title    = document.getElementById('f-title').value.trim();
+    var org      = document.getElementById('f-org').value.trim();
+    var phone    = cleanPhone(document.getElementById('f-phone').value);
+    var email    = document.getElementById('f-email').value.trim();
+    var url      = document.getElementById('f-url').value.trim();
+    var linkedin = document.getElementById('f-linkedin').value.trim();
+    var ig       = cleanHandle(document.getElementById('f-instagram').value);
+    var threads  = cleanHandle(document.getElementById('f-threads').value);
+    var twitter  = cleanHandle(document.getElementById('f-twitter').value);
+    var telegram = document.getElementById('f-telegram').value.trim();
+    var wa       = cleanPhone(document.getElementById('f-whatsapp').value);
 
     var fn = [prefix, first, last].filter(Boolean).join(' ');
 
@@ -360,89 +399,91 @@
       'N:' + esc(last) + ';' + esc(first) + ';;;' + esc(prefix),
       'FN:' + esc(fn)
     ];
-    if (title)  lines.push('TITLE:' + esc(title));
-    if (org)    lines.push('ORG:' + esc(org));
-    if (phone)  lines.push('TEL;TYPE=CELL:' + esc(phone));
-    if (email)  lines.push('EMAIL:' + esc(email));
-    if (url)    lines.push('URL:' + esc(url));
+    if (title)    lines.push('TITLE:' + esc(title));
+    if (org)      lines.push('ORG:' + esc(org));
+    if (phone)    lines.push('TEL;TYPE=CELL,VOICE:' + phone);
+    if (email)    lines.push('EMAIL:' + esc(email));
+    if (url)      lines.push('URL:' + esc(url));
+    if (linkedin) lines.push('URL;TYPE=LinkedIn:' + esc(linkedin));
+    if (ig)       lines.push('X-SOCIALPROFILE;TYPE=instagram;x-user=' + ig + ':https://instagram.com/' + ig);
+    if (threads)  lines.push('X-SOCIALPROFILE;TYPE=threads;x-user=' + threads + ':https://threads.net/@' + threads);
+    if (twitter)  lines.push('X-TWITTER:' + twitter);
+    if (twitter)  lines.push('URL;TYPE=Twitter/X:https://x.com/' + twitter);
+    if (telegram) {
+      var tg = telegram.replace(/^@/, '');
+      var tgUrl = tg.startsWith('+') || /^\d/.test(tg)
+        ? 'https://t.me/' + encodeURIComponent(tg)
+        : 'https://t.me/' + tg;
+      lines.push('URL;TYPE=Telegram:' + tgUrl);
+    }
+    if (wa) lines.push('URL;TYPE=WhatsApp:https://wa.me/' + wa.replace(/^\+/, ''));
     lines.push('END:VCARD');
 
     return { vcard: lines.join('\r\n'), fn: fn };
   }
 
+  /* ── render QR ── */
   function renderQR(text) {
     qrBox.innerHTML = '';
-    qrInstance = new QRCode(qrBox, {
-      text: text,
-      width: 208,
-      height: 208,
-      colorDark: '#0A2342',
-      colorLight: '#ffffff',
+    new QRCode(qrBox, {
+      text: text, width: 208, height: 208,
+      colorDark: '#0A2342', colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.M
     });
   }
 
-  function getCanvas() {
-    return qrBox.querySelector('canvas');
-  }
-
-  function downloadHiRes(text, filename) {
-    // gera canvas 4× para alta resolução
-    var size = 832; // 208 × 4
+  /* ── download PNG (4×) ── */
+  function downloadPng(text, filename) {
     var tmp = document.createElement('div');
     tmp.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
     document.body.appendChild(tmp);
-
     new QRCode(tmp, {
-      text: text,
-      width: size,
-      height: size,
-      colorDark: '#0A2342',
-      colorLight: '#ffffff',
+      text: text, width: 832, height: 832,
+      colorDark: '#0A2342', colorLight: '#ffffff',
       correctLevel: QRCode.CorrectLevel.M
     });
-
     setTimeout(function () {
-      var c = tmp.querySelector('canvas');
-      if (!c) {
-        // fallback: img element
-        var img = tmp.querySelector('img');
-        if (img) {
-          var link = document.createElement('a');
-          link.href = img.src;
-          link.download = filename;
-          link.click();
-        }
-        document.body.removeChild(tmp);
-        return;
-      }
-      var link = document.createElement('a');
-      link.href = c.toDataURL('image/png');
-      link.download = filename;
-      link.click();
+      var el = tmp.querySelector('canvas') || tmp.querySelector('img');
+      if (!el) { document.body.removeChild(tmp); return; }
+      var a = document.createElement('a');
+      a.href     = el.tagName === 'CANVAS' ? el.toDataURL('image/png') : el.src;
+      a.download = filename;
+      a.click();
       document.body.removeChild(tmp);
     }, 200);
   }
 
+  /* ── download .vcf ── */
+  function downloadVcf(text, filename) {
+    var blob = new Blob([text], { type: 'text/vcard;charset=utf-8' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /* ── form submit ── */
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    var result = buildVCard();
-    preview.textContent = result.vcard;
-    nameEl.textContent  = result.fn || 'Contato';
-    renderQR(result.vcard);
+    var r = buildVCard();
+    preview.textContent = r.vcard;
+    nameEl.textContent  = r.fn || 'Contato';
+    renderQR(r.vcard);
     section.classList.add('visible');
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    dlBtn.onclick = function () {
-      var slug = (result.fn || 'vcard').toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-      downloadHiRes(result.vcard, 'qr_vcard_' + slug + '.png');
-    };
+    var slug = (r.fn || 'vcard').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+    btnPng.onclick = function () { downloadPng(r.vcard, 'qr_vcard_' + slug + '.png'); };
+    btnVcf.onclick = function () { downloadVcf(r.vcard, slug + '.vcf'); };
   });
 
-  // auto-gera na carga se campos já preenchidos
+  /* ── auto-gera se pré-preenchido ── */
   window.addEventListener('DOMContentLoaded', function () {
-    var first = document.getElementById('f-firstname').value.trim();
-    if (first) form.dispatchEvent(new Event('submit'));
+    if (document.getElementById('f-firstname').value.trim())
+      form.dispatchEvent(new Event('submit'));
   });
 }());
 </script>
