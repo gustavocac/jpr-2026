@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gerador de QR vCard — JPR 2026</title>
+<script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0A2342;
+    --teal:   #00A8B5;
+    --amber:  #F4A300;
+    --bg:     #F5F7FA;
+    --paper:  #FFFFFF;
+    --muted:  #5C6675;
+    --rule:   #D7DCE3;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(10,35,66,.10);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 16px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  header .eyebrow {
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--teal);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+  }
+  header p {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 460px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--paper);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 36px 40px;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  /* ── Form ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 24px;
+  }
+  @media (max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .card { padding: 24px 20px; }
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field.full { grid-column: 1 / -1; }
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  input {
+    height: 44px;
+    padding: 0 14px;
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--navy);
+    background: var(--bg);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit;
+  }
+  input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(0,168,181,.15);
+    background: var(--paper);
+  }
+  input::placeholder { color: var(--rule); }
+
+  /* ── Notice ── */
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(244,163,0,.08);
+    border: 1.5px solid rgba(244,163,0,.30);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 22px;
+    font-size: 13px;
+    color: #7a5200;
+    line-height: 1.5;
+  }
+  .notice svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Generate button ── */
+  .btn-generate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 24px;
+    height: 52px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    font-family: inherit;
+  }
+  .btn-generate:hover  { background: #143258; }
+  .btn-generate:active { transform: scale(.98); }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--rule);
+    margin: 36px 0;
+  }
+
+  /* ── QR output ── */
+  #qr-section { display: none; }
+  #qr-section.visible { display: block; }
+
+  .qr-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+  }
+  @media (max-width: 560px) {
+    .qr-layout { flex-direction: column; align-items: center; }
+  }
+
+  #qr-box {
+    flex-shrink: 0;
+    width: 240px;
+    height: 240px;
+    background: #ffffff;
+    border: 2px solid var(--rule);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  #qr-box canvas, #qr-box img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .qr-meta { flex: 1; }
+  .qr-meta h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .qr-meta .vcard-preview {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    word-break: break-all;
+    white-space: pre-wrap;
+    border: 1px solid var(--rule);
+  }
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 24px;
+    height: 46px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+    font-family: inherit;
+  }
+  .btn-download:hover { background: #008a95; }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 48px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    opacity: .7;
+  }
+  footer a { color: var(--teal); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">JPR 2026 · Laudo Assistido por LLM</div>
+  <h1>Gerador de QR Code vCard</h1>
+  <p>Preencha os dados do contato e gere um QR Code que abre diretamente na agenda do celular.</p>
+</header>
+
+<div class="card">
+
+  <!-- Formulário -->
+  <form id="vcf-form" autocomplete="off">
+    <div class="form-grid">
+      <div class="field">
+        <label for="f-firstname">Nome</label>
+        <input id="f-firstname" type="text" placeholder="Gustavo" value="Gustavo Cesar de Antonio" />
+      </div>
+      <div class="field">
+        <label for="f-lastname">Sobrenome</label>
+        <input id="f-lastname" type="text" placeholder="Corradi" value="Corradi" />
+      </div>
+      <div class="field">
+        <label for="f-prefix">Prefixo / Título</label>
+        <input id="f-prefix" type="text" placeholder="Dr." value="Dr." />
+      </div>
+      <div class="field">
+        <label for="f-title">Cargo</label>
+        <input id="f-title" type="text" placeholder="Radiologista" value="Radiologista" />
+      </div>
+      <div class="field full">
+        <label for="f-org">Empresa / Instituição</label>
+        <input id="f-org" type="text" placeholder="Hospital / Clínica" value="" />
+      </div>
+      <div class="field">
+        <label for="f-phone">Celular</label>
+        <input id="f-phone" type="tel" placeholder="+55 11 99999-9999" value="" />
+      </div>
+      <div class="field">
+        <label for="f-email">E-mail</label>
+        <input id="f-email" type="email" placeholder="email@exemplo.com" value="gustavocorradi@gmail.com" />
+      </div>
+      <div class="field full">
+        <label for="f-url">Website / LinkedIn</label>
+        <input id="f-url" type="url" placeholder="https://linkedin.com/in/..." value="https://linkedin.com/in/gustavo-corradi" />
+      </div>
+    </div>
+
+    <div class="notice">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7.25" stroke="#c87900" stroke-width="1.5"/>
+        <path d="M8 5v4M8 11v.5" stroke="#c87900" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span><strong>Mantenha os dados curtos.</strong> Quanto mais texto, mais denso fica o QR Code — dificultando a leitura em tamanhos pequenos (ex.: cartão de visita ou slide). Prefira omitir campos opcionais quando não essenciais.</span>
+    </div>
+
+    <button type="submit" class="btn-generate">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M1 1h6v6H1zM11 1h6v6h-6zM1 11h6v6H1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M11 11h2v2h-2zM13 13h2v2h-2zM11 15h2v2h-2zM15 11h2v2h-2z" fill="currentColor"/>
+      </svg>
+      Gerar QR Code
+    </button>
+  </form>
+
+  <div class="divider"></div>
+
+  <!-- Output -->
+  <div id="qr-section">
+    <div class="qr-layout">
+      <div id="qr-box"></div>
+      <div class="qr-meta">
+        <h2 id="qr-name"></h2>
+        <pre id="vcard-preview" class="vcard-preview"></pre>
+        <button class="btn-download" id="btn-dl">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1v9M4.5 7l3.5 3.5L11.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 13h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          Baixar PNG (alta resolução)
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Gerado no navegador · sem servidor · sem API externa</p>
+  <p style="margin-top:6px;"><a href="deck.html">← Voltar ao deck JPR 2026</a></p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var form    = document.getElementById('vcf-form');
+  var section = document.getElementById('qr-section');
+  var qrBox   = document.getElementById('qr-box');
+  var preview = document.getElementById('vcard-preview');
+  var nameEl  = document.getElementById('qr-name');
+  var dlBtn   = document.getElementById('btn-dl');
+
+  var qrInstance = null;
+
+  function esc(s) {
+    return (s || '').replace(/[\\,;]/g, function(c){ return '\\' + c; });
+  }
+
+  function buildVCard() {
+    var first  = document.getElementById('f-firstname').value.trim();
+    var last   = document.getElementById('f-lastname').value.trim();
+    var prefix = document.getElementById('f-prefix').value.trim();
+    var title  = document.getElementById('f-title').value.trim();
+    var org    = document.getElementById('f-org').value.trim();
+    var phone  = document.getElementById('f-phone').value.trim();
+    var email  = document.getElementById('f-email').value.trim();
+    var url    = document.getElementById('f-url').value.trim();
+
+    var fn = [prefix, first, last].filter(Boolean).join(' ');
+
+    var lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      'N:' + esc(last) + ';' + esc(first) + ';;;' + esc(prefix),
+      'FN:' + esc(fn)
+    ];
+    if (title)  lines.push('TITLE:' + esc(title));
+    if (org)    lines.push('ORG:' + esc(org));
+    if (phone)  lines.push('TEL;TYPE=CELL:' + esc(phone));
+    if (email)  lines.push('EMAIL:' + esc(email));
+    if (url)    lines.push('URL:' + esc(url));
+    lines.push('END:VCARD');
+
+    return { vcard: lines.join('\r\n'), fn: fn };
+  }
+
+  function renderQR(text) {
+    qrBox.innerHTML = '';
+    qrInstance = new QRCode(qrBox, {
+      text: text,
+      width: 208,
+      height: 208,
+      colorDark: '#0A2342',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  function getCanvas() {
+    return qrBox.querySelector('canvas');
+  }
+
+  function downloadHiRes(text, filename) {
+    // gera canvas 4× para alta resolução
+    var size = 832; // 208 × 4
+    var tmp = document.createElement('div');
+    tmp.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    document.body.appendChild(tmp);
+
+    new QRCode(tmp, {
+      text: text,
+      width: size,
+      height: size,
+      colorDark: '#0A2342',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    setTimeout(function () {
+      var c = tmp.querySelector('canvas');
+      if (!c) {
+        // fallback: img element
+        var img = tmp.querySelector('img');
+        if (img) {
+          var link = document.createElement('a');
+          link.href = img.src;
+          link.download = filename;
+          link.click();
+        }
+        document.body.removeChild(tmp);
+        return;
+      }
+      var link = document.createElement('a');
+      link.href = c.toDataURL('image/png');
+      link.download = filename;
+      link.click();
+      document.body.removeChild(tmp);
+    }, 200);
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var result = buildVCard();
+    preview.textContent = result.vcard;
+    nameEl.textContent  = result.fn || 'Contato';
+    renderQR(result.vcard);
+    section.classList.add('visible');
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    dlBtn.onclick = function () {
+      var slug = (result.fn || 'vcard').toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+      downloadHiRes(result.vcard, 'qr_vcard_' + slug + '.png');
+    };
+  });
+
+  // auto-gera na carga se campos já preenchidos
+  window.addEventListener('DOMContentLoaded', function () {
+    var first = document.getElementById('f-firstname').value.trim();
+    if (first) form.dispatchEvent(new Event('submit'));
+  });
+}());
+</script>
+
+</body>
+</html>
